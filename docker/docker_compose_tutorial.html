@@ -1,0 +1,349 @@
+<style>
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong);transition:background .2s;flex-shrink:0}
+.step-dot.active{background:var(--text-accent)}
+.pill{display:inline-block;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.pill-teal{background:#E1F5EE;color:#085041}
+.pill-purple{background:#EEEDFE;color:#3C3489}
+.pill-coral{background:#FAECE7;color:#712B13}
+.pill-amber{background:#FAEEDA;color:#633806}
+.pill-gray{background:#F1EFE8;color:#444441}
+.pill-blue{background:#E6F1FB;color:#0C447C}
+.key-block{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.key-row{display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:start;font-size:13px}
+.key-label{font-family:var(--font-mono);font-size:12px;background:var(--surface-1);border:0.5px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--text-primary);white-space:nowrap}
+.key-desc{color:var(--text-secondary);padding-top:3px;line-height:1.5}
+.code-block{font-family:var(--font-mono);font-size:12px;background:var(--surface-1);border:0.5px solid var(--border);border-radius:8px;padding:14px 16px;line-height:1.8;color:var(--text-primary);white-space:pre;overflow-x:auto;margin:12px 0}
+.hl{background:#E6F1FB;color:#0C447C;border-radius:3px;padding:0 2px}
+.btn-row{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.nav-btn{font-size:13px;padding:7px 18px}
+.progress{font-size:12px;color:var(--text-muted)}
+</style>
+
+<h2 class="sr-only">Docker Compose tutorial — step through each section of a compose file interactively</h2>
+
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:20px" id="dots"></div>
+
+<div id="content"></div>
+
+<div class="btn-row">
+  <button class="nav-btn" id="prev-btn" onclick="nav(-1)">← Previous</button>
+  <span class="progress" id="prog"></span>
+  <button class="nav-btn" id="next-btn" onclick="nav(1)">Next →</button>
+</div>
+
+<script>
+const steps = [
+  {
+    title: 'What is a compose file?',
+    badge: ['gray','Overview'],
+    desc: 'A <code>docker-compose.yml</code> is a single file that describes your entire app — all services, networks, and volumes — so you can spin everything up with one command instead of running many <code>docker run</code> commands.',
+    code: `# docker-compose.yml lives in your project root
+# Run:  docker compose up -d
+# Stop: docker compose down`,
+    keys: [
+      ['docker compose up -d', 'Start all services in the background'],
+      ['docker compose down', 'Stop and remove containers'],
+      ['docker compose logs -f', 'Stream logs from all services'],
+      ['docker compose ps', 'List running services'],
+    ],
+    highlight: [],
+  },
+  {
+    title: 'version',
+    badge: ['gray','Top level'],
+    desc: 'Declares the Compose file format version. <code>3.8</code> is the sweet spot — it supports healthchecks, deploy configs, and all modern features. Always quote it as a string.',
+    code: `version: "3.8"   ← format version
+
+services:
+  ...
+networks:
+  ...
+volumes:
+  ...`,
+    keys: [
+      ['"3.8"', 'Recommended — supports healthcheck, depends_on conditions'],
+      ['"3"', 'Minimum for most modern features'],
+      ['"2.4"', 'Single-host only, older syntax'],
+    ],
+    highlight: [0],
+  },
+  {
+    title: 'services',
+    badge: ['teal','Core block'],
+    desc: 'The heart of the file. Each key under <code>services:</code> becomes a container. The key name is also the DNS hostname other containers use to reach it.',
+    code: `version: "3.8"
+
+services:        ← everything under here is a container
+  mysql:         ← container name + internal DNS hostname
+    image: mysql:5.7
+
+  flask-app:     ← another container
+    build: .`,
+    keys: [
+      ['mysql', 'Other containers reach this via hostname "mysql"'],
+      ['flask-app', 'Any name you choose — becomes the DNS name on the network'],
+    ],
+    highlight: [2,3,4,6,7],
+  },
+  {
+    title: 'image vs build',
+    badge: ['teal','Service config'],
+    desc: 'Every service needs either <code>image</code> (pull from registry) or <code>build</code> (build from local Dockerfile). Use <code>image</code> for databases and third-party apps, <code>build</code> for your own code.',
+    code: `services:
+  mysql:
+    image: mysql:5.7      ← pull from Docker Hub
+                          ← always pin a version, not "latest"
+
+  flask-app:
+    build: .              ← build from ./Dockerfile
+    # OR
+    build:
+      context: .          ← where Dockerfile lives
+      dockerfile: Dockerfile.prod   ← custom filename`,
+    keys: [
+      ['image: mysql:5.7', 'Pull pinned version — never use "latest" in prod'],
+      ['build: .', 'Build from Dockerfile in current directory'],
+      ['build.context', 'Root folder sent to Docker daemon'],
+      ['build.dockerfile', 'Custom Dockerfile name/path'],
+    ],
+    highlight: [2,5],
+  },
+  {
+    title: 'ports',
+    badge: ['coral','Networking'],
+    desc: '<code>ports</code> maps host ports to container ports. Format is <code>HOST:CONTAINER</code>. Only expose what needs to be reachable from outside — databases should have no ports block at all.',
+    code: `services:
+  flask-app:
+    ports:
+      - "5000:5000"    ← host:container
+      - "8080:80"      ← host 8080 → container 80
+
+  mysql:
+    # NO ports here — only reachable inside Docker network
+    # This is the security best practice`,
+    keys: [
+      ['"5000:5000"', 'host_port:container_port'],
+      ['"8080:80"', 'Different host/container ports — totally fine'],
+      ['no ports', 'DB has no ports = not reachable from outside host'],
+    ],
+    highlight: [2,3,4],
+  },
+  {
+    title: 'environment',
+    badge: ['teal','Service config'],
+    desc: 'Inject environment variables into the container. This is how you pass passwords, hostnames, and config without hardcoding them in your app. Use <code>.env</code> files to keep secrets out of git.',
+    code: `services:
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: root     ← set directly (dev only)
+      MYSQL_DATABASE: devops
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+
+  flask-app:
+    environment:
+      MYSQL_HOST: mysql             ← must match service name above
+      MYSQL_USER: root
+      MYSQL_PASSWORD: \${DB_PASS}   ← read from .env file`,
+    keys: [
+      ['MYSQL_HOST: mysql', 'Must match the service key name exactly'],
+      ['${DB_PASS}', 'Reads from .env file in same directory — keep secrets here'],
+      ['env_file: .env', 'Alternative: load entire .env file into service'],
+    ],
+    highlight: [2,3,4,5,6,9,10,11],
+  },
+  {
+    title: 'volumes',
+    badge: ['amber','Storage'],
+    desc: 'Volumes persist data beyond a container\'s lifetime. Two types: named volumes (managed by Docker) and bind mounts (a path on your host). Use named volumes for databases, bind mounts for code you\'re actively editing.',
+    code: `services:
+  mysql:
+    volumes:
+      - mysql_data:/var/lib/mysql        ← named volume (recommended for DB)
+      - ./message.sql:/docker-entrypoint-initdb.d/message.sql
+                                         ← bind mount: host path → container path
+                                         ← .sql files here auto-run on first boot
+  flask-app:
+    volumes:
+      - .:/app                           ← bind mount for live code reload
+
+volumes:           ← declare named volumes at bottom of file
+  mysql_data:      ← Docker manages the storage location`,
+    keys: [
+      ['named_vol:/path', 'Docker manages location — survives container removal'],
+      ['./host:/container', 'Bind mount — mirrors a host folder into container'],
+      ['initdb.d/', 'MySQL runs all .sql files here automatically on first start'],
+    ],
+    highlight: [2,3,4,10,11],
+  },
+  {
+    title: 'networks',
+    badge: ['purple','Networking'],
+    desc: 'Containers on the same network can talk to each other using their service name as the hostname. Containers on different networks are isolated. If you skip the networks block, Compose creates a default bridge network automatically.',
+    code: `services:
+  mysql:
+    networks:
+      - twotier          ← attach to this network
+
+  flask-app:
+    networks:
+      - twotier          ← same network = can reach mysql by name
+
+networks:
+  twotier:               ← declare it here
+    driver: bridge       ← default, can be omitted`,
+    keys: [
+      ['twotier', 'Custom name — both services must share it to communicate'],
+      ['driver: bridge', 'Default — isolated network on a single host'],
+      ['driver: overlay', 'Multi-host (Docker Swarm)'],
+    ],
+    highlight: [2,3,6,7,9,10],
+  },
+  {
+    title: 'depends_on',
+    badge: ['teal','Service config'],
+    desc: '<code>depends_on</code> controls startup order. The basic form just waits for the container to start — not for it to be ready. Use <code>condition: service_healthy</code> with a healthcheck to actually wait until the DB accepts connections.',
+    code: `services:
+  flask-app:
+    depends_on:
+      mysql:
+        condition: service_healthy   ← wait until healthcheck passes
+                                     ← NOT just "container started"
+
+  mysql:
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s      ← check every 10 seconds
+      timeout: 5s        ← fail if no response in 5s
+      retries: 5         ← unhealthy after 5 failures
+      start_period: 60s  ← grace period on first boot`,
+    keys: [
+      ['condition: service_healthy', 'Gold standard — waits for healthcheck to pass'],
+      ['condition: service_started', 'Only waits for container to start (not ready)'],
+      ['start_period', 'Give slow-starting services time before checks begin'],
+    ],
+    highlight: [2,3,4,7,8,9,10,11,12,13],
+  },
+  {
+    title: 'restart',
+    badge: ['teal','Service config'],
+    desc: '<code>restart</code> tells Docker what to do if a container exits. Use <code>always</code> for services that should always be running, <code>on-failure</code> for batch jobs that should retry on crash but stop when done.',
+    code: `services:
+  flask-app:
+    restart: always          ← restart no matter what
+
+  worker:
+    restart: on-failure      ← restart only on non-zero exit
+
+  batch-job:
+    restart: "no"            ← never restart (default)
+
+# Options:
+#   no            — never restart (default)
+#   always        — always restart
+#   on-failure    — restart only on error exit code
+#   unless-stopped — always, except manual docker stop`,
+    keys: [
+      ['always', 'For long-running services: web servers, DBs'],
+      ['on-failure', 'For workers that should retry crashes but not clean exits'],
+      ['unless-stopped', 'Like always but respects manual docker stop'],
+    ],
+    highlight: [1,2],
+  },
+  {
+    title: 'Full example',
+    badge: ['blue','Putting it together'],
+    desc: 'Here\'s the complete two-tier compose file from your project — every concept from this tutorial in one file.',
+    code: `version: "3.8"
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: devops
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./message.sql:/docker-entrypoint-initdb.d/message.sql
+    networks:
+      - twotier
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost","-uroot","-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  flask-app:
+    image: trainwithshubham/two-tier-flask-app:latest
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: devops
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - twotier
+    restart: always
+
+networks:
+  twotier:`,
+    keys: [],
+    highlight: [],
+  },
+];
+
+let cur = 0;
+
+function render() {
+  const s = steps[cur];
+  const dotEl = document.getElementById('dots');
+  dotEl.innerHTML = steps.map((_, i) =>
+    `<div class="step-dot ${i===cur?'active':''}"></div>`
+  ).join('');
+
+  const lines = s.code.split('\n');
+  const codeHtml = lines.map((ln, i) => {
+    const escaped = ln.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return s.highlight.includes(i)
+      ? `<span style="background:var(--bg-accent);display:block;margin:0 -16px;padding:0 16px;border-left:2px solid var(--border-accent)">${escaped}</span>`
+      : escaped;
+  }).join('\n');
+
+  const keysHtml = s.keys.length ? `
+    <div class="key-block">
+      ${s.keys.map(([k,v]) => `
+        <div class="key-row">
+          <span class="key-label">${k}</span>
+          <span class="key-desc">${v}</span>
+        </div>`).join('')}
+    </div>` : '';
+
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:16px;font-weight:500;color:var(--text-primary)">${s.title}</span>
+      <span class="pill pill-${s.badge[0]}">${s.badge[1]}</span>
+    </div>
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin:0 0 4px">${s.desc}</p>
+    <div class="code-block">${codeHtml}</div>
+    ${keysHtml}
+  `;
+
+  document.getElementById('prog').textContent = `${cur+1} / ${steps.length}`;
+  document.getElementById('prev-btn').disabled = cur === 0;
+  document.getElementById('next-btn').disabled = cur === steps.length - 1;
+  document.getElementById('next-btn').textContent = cur === steps.length - 1 ? 'Done ✓' : 'Next →';
+}
+
+function nav(dir) {
+  cur = Math.max(0, Math.min(steps.length-1, cur+dir));
+  render();
+}
+
+render();
+</script>

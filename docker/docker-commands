@@ -1,0 +1,91 @@
+ 1994  sudo apt update
+ 1995  sudo apt install docker
+ 1996  sudo systemctl status docker
+ 1997  sudo systemctl stop docker
+ 1999  df -h
+       newgrp docker - to refresh page
+ 1925  docker login -u <username>
+ 1926  docker push ravip8446/my-first-docker-image:latest
+ 1927  sudo docker push ravip8446/my-first-docker-image:latest
+ 1928  docker image
+ 1929  sudo docker image
+
+ 1931  docker info | grep Username
+ 1932  sudo docker info | grep Username
+ 1933  docker push ravip8446/my-first-docker-image:latest
+ 1934  sudo usermod -aG docker guts	
+ 1992  docker run -it 4a5a7dabc0ca
+ 1993  docker run -p 8000:8000 -it 4a5a7dabc0ca
+ 1994  docker images
+ 1995  docker ps -a
+ 101  docker run -d -p 5000:5000 -e MYSQL_HOST=mysql -e MYSQL_USER=root  -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DB=devops two-tier-backend:latest
+ 112  docker logs <container id or name>
+ 113  docker network ls
+ 114  docker inspect network <network name>
+ 115  docker inspect  <container id or name>
+ 53  docker run -d --name mysql--network mynet -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=devops mysql
+ docker exec -it <mysql container id> bash
+ docker network create <network name or id> 
+ 
+ docker network rm <network id or name>
+ 
+ docker rmi -f $(docker images -q) - Remove all images at once (recommended)
+ 
+ BATCH CLEAN:  
+ 
+ docker stop -f $(docker ps -a -q)	Stopping all containers
+ docker rm -f $(docker ps -a -q)	Removing all containers
+ docker rmi -f $(docker images -q)	Removing all images
+ docker image prune -a  #remove all unused images
+ 
+ DOCKER BUILD : 
+ 
+ docker build \
+  -t simple-calculator:v1 \
+  -f Dockerfile \
+  --no-cache .
+  
+
+Option explanation:
+
+-t → Name and tag the image.
+-f → Specify a Dockerfile if it's not named Dockerfile.
+--no-cache → Rebuild every layer from scratch.
+. → Build context (current directory).
+
+# for web application :
+docker run -d -p 80:8000 --name myapp node-app
+  
+ # Static Website (nginx)
+ docker run -d \
+  -p 80:80 \
+  --name website \
+  nginx
+  
+#  Database — MySQL
+docker run -d \
+  -p 3306:3306 \
+  --name mysql-db \
+  -e MYSQL_ROOT_PASSWORD=mypassword \
+  -e MYSQL_DATABASE=mydb \
+  -v mysql-data:/var/lib/mysql \
+  mysql:latest
+  
+ # -e for environment variables (password, db name)
+ # -v for volume (so data survives if container restarts)
+No need to expose database to public — usually kept internal hence we dont use port mapping here.
+
+
+
+Flag      Purpose 	       Web-app        Database
+-d      Run in background        Always       Always
+
+-p      Port mapping           Required       But keep internal
+
+--name  Give it a name 		Always        Always
+
+-e      Environment variables  Sometimes      Always (passwords)
+
+-v      volume for data         Rarely        Always
+
+--network Connect containers   Sometimes      When app needs DB

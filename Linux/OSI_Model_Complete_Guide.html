@@ -1,0 +1,50 @@
+
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>OSI Model Complete Guide</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:#eee;margin:0;padding:20px}
+h1,h2{color:#38bdf8}.card{background:#1e293b;padding:15px;border-radius:8px;margin:10px 0}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #555;padding:8px}
+.flow{font-family:monospace;background:#111827;padding:10px;white-space:pre-wrap}
+</style></head><body>
+<h1>OSI Model Complete Guide</h1>
+<p>Offline study guide for Networking, AWS, Linux and DevOps interviews.</p>
+<h2>OSI Layers</h2>
+<table><tr><th>Layer</th><th>Name</th><th>Purpose</th><th>Protocols</th><th>PDU</th><th>Device</th></tr>
+<tr><td>7</td><td>Application</td><td>User services</td><td>HTTP, HTTPS, DNS, FTP, SSH, SMTP</td><td>Data</td><td>Proxy</td></tr>
+<tr><td>6</td><td>Presentation</td><td>Encryption, Compression</td><td>TLS/SSL, JPEG</td><td>Data</td><td>Gateway</td></tr>
+<tr><td>5</td><td>Session</td><td>Session management</td><td>NetBIOS,RPC</td><td>Data</td><td>Gateway</td></tr>
+<tr><td>4</td><td>Transport</td><td>Reliable delivery</td><td>TCP,UDP</td><td>Segment</td><td>Firewall</td></tr>
+<tr><td>3</td><td>Network</td><td>Routing</td><td>IP,ICMP</td><td>Packet</td><td>Router</td></tr>
+<tr><td>2</td><td>Data Link</td><td>MAC addressing</td><td>Ethernet,ARP</td><td>Frame</td><td>Switch</td></tr>
+<tr><td>1</td><td>Physical</td><td>Signals</td><td>Fiber,UTP</td><td>Bits</td><td>Hub/Cable</td></tr>
+</table>
+<div class="card"><h2>Encapsulation</h2><div class="flow">Application(Data)
+↓
+Transport (+TCP Header)=Segment
+↓
+Network (+IP Header)=Packet
+↓
+Data Link (+MAC Header/Trailer)=Frame
+↓
+Physical = Bits</div></div>
+<div class="card"><h2>Decapsulation</h2><div class="flow">Bits → Frame → Packet → Segment → Data</div></div>
+<div class="card"><h2>Real Example</h2><ol>
+<li>Type https://google.com</li><li>DNS resolves IP.</li><li>TCP 3-way handshake.</li><li>TLS encryption.</li><li>HTTP request sent.</li><li>Routers forward packets.</li><li>Server responds.</li><li>Browser renders page.</li></ol></div>
+<div class="card"><h2>TCP/IP Mapping</h2>
+<ul><li>Application = OSI 5-7</li><li>Transport = OSI 4</li><li>Internet = OSI 3</li><li>Network Access = OSI 1-2</li></ul></div>
+<div class="card"><h2>Common Ports</h2>
+80 HTTP, 443 HTTPS, 22 SSH, 21 FTP, 25 SMTP, 53 DNS, 3306 MySQL.</div>
+<div class="card"><h2>Linux Commands</h2><pre>ip a
+ip route
+ping
+traceroute
+ss -tulnp
+netstat -tulnp
+nslookup
+dig
+curl
+tcpdump</pre></div>
+<div class="card"><h2>Interview Mnemonic</h2>
+<p>All People Seem To Need Data Processing</p>
+</div>
+</body></html>

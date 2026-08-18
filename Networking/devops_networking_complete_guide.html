@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Networking — Beginner to Production & Interview Guide</title>
+<style>
+:root{
+  --bg:#0b1220;--panel:#111b2e;--panel2:#16243b;--text:#e7edf7;--muted:#aab7ca;
+  --accent:#55b6ff;--green:#50d890;--yellow:#ffd166;--red:#ff6b6b;--border:#263753;
+  --code:#08101d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.65}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+header{padding:55px 7%;background:linear-gradient(135deg,#102342,#0b1220 60%);border-bottom:1px solid var(--border)}
+header h1{font-size:clamp(2rem,5vw,4rem);margin:0 0 12px}
+header p{max-width:900px;color:var(--muted);font-size:1.1rem}
+.badge{display:inline-block;padding:5px 10px;border:1px solid var(--border);border-radius:999px;color:var(--accent);margin:4px;font-size:.85rem}
+.layout{display:grid;grid-template-columns:280px 1fr;max-width:1500px;margin:auto}
+aside{position:sticky;top:0;height:100vh;overflow:auto;padding:25px 18px;border-right:1px solid var(--border);background:#0d1728}
+aside h3{margin-top:0;color:var(--accent)}
+aside a{display:block;padding:7px 8px;color:#c5d0df;border-radius:6px;font-size:.9rem}
+aside a:hover{background:var(--panel2);text-decoration:none}
+main{padding:35px 5%;min-width:0}
+section{margin-bottom:55px;scroll-margin-top:20px}
+h2{font-size:2rem;border-bottom:1px solid var(--border);padding-bottom:10px}
+h3{color:#d9e7fa;margin-top:28px}
+h4{color:var(--yellow)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.callout{border-left:4px solid var(--accent);background:#102039;padding:15px 18px;border-radius:7px;margin:15px 0}
+.warn{border-left-color:var(--yellow)} .danger{border-left-color:var(--red)} .success{border-left-color:var(--green)}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:.94rem}
+th,td{border:1px solid var(--border);padding:10px;vertical-align:top}
+th{background:var(--panel2);color:#fff;text-align:left}
+code{background:#18263d;padding:2px 5px;border-radius:4px;color:#d9f1ff}
+pre{background:var(--code);border:1px solid var(--border);padding:16px;border-radius:9px;overflow:auto;color:#d9f1ff}
+.diagram{background:#07101d;border:1px dashed #365070;padding:20px;border-radius:10px;font-family:ui-monospace,monospace;white-space:pre;overflow:auto;color:#bfe2ff}
+.kpi{font-size:1.5rem;color:var(--green);font-weight:700}
+details{background:var(--panel);border:1px solid var(--border);border-radius:9px;margin:10px 0;padding:12px 16px}
+summary{cursor:pointer;font-weight:700;color:#dce9f8}
+.small{font-size:.88rem;color:var(--muted)}
+.search{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:#0a1424;color:white;margin-bottom:15px}
+button{background:#1677c8;color:white;border:0;padding:10px 14px;border-radius:7px;cursor:pointer}
+button:hover{filter:brightness(1.15)}
+input,select{background:#0a1424;color:white;border:1px solid var(--border);padding:9px;border-radius:6px}
+#topBtn{position:fixed;right:20px;bottom:20px;display:none}
+@media(max-width:900px){.layout{display:block}aside{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--border)}main{padding:25px 4%}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DevOps Networking</h1>
+  <p>One complete networking reference: from IP addresses, CIDR and subnetting to AWS VPCs, Docker/Kubernetes, production troubleshooting and interview preparation.</p>
+  <span class="badge">Beginner → Advanced</span>
+  <span class="badge">AWS + Linux + Docker + Kubernetes</span>
+  <span class="badge">Production Ready</span>
+  <span class="badge">Interview Q&A</span>
+</header>
+
+<div class="layout">
+<aside>
+  <h3>Contents</h3>
+  <input class="search" id="search" placeholder="Filter topics...">
+  <nav id="toc">
+    <a href="#mental">1. Networking Mental Model</a>
+    <a href="#models">2. OSI & TCP/IP</a>
+    <a href="#devices">3. Network Devices</a>
+    <a href="#ip">4. IP Addressing</a>
+    <a href="#binary">5. Binary & Masks</a>
+    <a href="#cidr">6. CIDR</a>
+    <a href="#subnet">7. Subnetting</a>
+    <a href="#routing">8. Routing</a>
+    <a href="#protocols">9. TCP/UDP/Ports</a>
+    <a href="#dns">10. DNS</a>
+    <a href="#arp">11. ARP/ICMP/DHCP</a>
+    <a href="#nat">12. NAT</a>
+    <a href="#security">13. Network Security</a>
+    <a href="#aws">14. AWS Networking</a>
+    <a href="#docker">15. Docker Networking</a>
+    <a href="#k8s">16. Kubernetes Networking</a>
+    <a href="#linux">17. Linux Commands</a>
+    <a href="#troubleshoot">18. Production Troubleshooting</a>
+    <a href="#architecture">19. Production Architectures</a>
+    <a href="#interview">20. Interview Q&A</a>
+    <a href="#cheat">21. Cheat Sheets</a>
+    <a href="#calculator">22. CIDR Calculator</a>
+  </nav>
+</aside>
+
+<main>
+
+<section id="mental">
+<h2>1. Networking Mental Model</h2>
+<div class="callout success"><b>The core question:</b> When machine A talks to machine B, you need to know <b>who</b> B is (IP/DNS), <b>where</b> B is (routing), <b>how</b> to reach it (protocol/port), and <b>whether</b> security allows it (firewall/SG/NACL).</div>
+<div class="diagram">
+Application → DNS → IP → Route → ARP/neighbor discovery → TCP/UDP → Port → Firewall → Application
+                ↓
+       packets cross switches/routers/NAT/load balancers
+</div>
+<div class="grid">
+<div class="card"><b>IP</b><br>Identifies a network interface/address.</div>
+<div class="card"><b>Subnet</b><br>Defines an IP range and network boundary.</div>
+<div class="card"><b>Route</b><br>Tells a device where to send traffic.</div>
+<div class="card"><b>Port</b><br>Identifies a service/application endpoint.</div>
+<div class="card"><b>DNS</b><br>Maps names such as example.com to IPs.</div>
+<div class="card"><b>Firewall</b><br>Allows or denies traffic based on rules.</div>
+</div>
+</section>
+
+<section id="models">
+<h2>2. OSI & TCP/IP Models</h2>
+<table>
+<tr><th>OSI</th><th>What it handles</th><th>Examples</th><th>DevOps relevance</th></tr>
+<tr><td>7 Application</td><td>User/application protocols</td><td>HTTP, DNS, SSH</td><td>API/web failures</td></tr>
+<tr><td>6 Presentation</td><td>Format/encryption</td><td>TLS, encoding</td><td>Certificates/TLS</td></tr>
+<tr><td>5 Session</td><td>Sessions/dialogue</td><td>RPC/session concepts</td><td>Long-lived connections</td></tr>
+<tr><td>4 Transport</td><td>End-to-end delivery</td><td>TCP, UDP</td><td>Ports, timeouts</td></tr>
+<tr><td>3 Network</td><td>Logical addressing/routing</td><td>IPv4, IPv6, ICMP</td><td>Routes, CIDR, VPC</td></tr>
+<tr><td>2 Data Link</td><td>Frames/MAC</td><td>Ethernet, VLAN</td><td>Switching, ARP adjacency</td></tr>
+<tr><td>1 Physical</td><td>Signals/media</td><td>Copper, fiber, radio</td><td>Physical connectivity</td></tr>
+</table>
+<div class="callout"><b>TCP/IP mapping:</b> Application ≈ OSI 5–7, Transport = 4, Internet = 3, Link = 1–2.</div>
+</section>
+
+<section id="devices">
+<h2>3. Network Devices</h2>
+<table>
+<tr><th>Device</th><th>Primary job</th><th>Typical layer</th></tr>
+<tr><td>Switch</td><td>Connects devices inside a LAN using MAC addresses</td><td>L2</td></tr>
+<tr><td>Router</td><td>Connects networks and forwards based on IP/routes</td><td>L3</td></tr>
+<tr><td>Firewall</td><td>Filters traffic</td><td>L3/L4; sometimes L7</td></tr>
+<tr><td>Load Balancer</td><td>Distributes connections/requests across backends</td><td>L4/L7</td></tr>
+<tr><td>Proxy</td><td>Acts as intermediary</td><td>Often L7</td></tr>
+<tr><td>Gateway</td><td>Exit/entry point to another network</td><td>Context dependent</td></tr>
+</table>
+</section>
+
+<section id="ip">
+<h2>4. IP Addressing</h2>
+<h3>IPv4</h3>
+<p>IPv4 uses 32 bits, normally written as four decimal octets: <code>192.168.1.10</code>. Each octet ranges from 0–255.</p>
+<table>
+<tr><th>Range</th><th>Purpose</th></tr>
+<tr><td>10.0.0.0/8</td><td>Private</td></tr>
+<tr><td>172.16.0.0/12</td><td>Private</td></tr>
+<tr><td>192.168.0.0/16</td><td>Private</td></tr>
+<tr><td>127.0.0.0/8</td><td>Loopback</td></tr>
+<tr><td>169.254.0.0/16</td><td>Link-local/APIPA</td></tr>
+<tr><td>0.0.0.0</td><td>Unspecified / default route context</td></tr>
+<tr><td>255.255.255.255</td><td>IPv4 limited broadcast</td></tr>
+</table>
+<h3>Public vs Private</h3>
+<p>A private IP is intended for internal networks and is not globally routable on the public Internet. A public IP can be Internet-routable. NAT commonly connects private address space to public addressing.</p>
+<h3>IPv6</h3>
+<p>IPv6 uses 128 bits, e.g. <code>2001:db8::10</code>. It provides a vastly larger address space and has no IPv4-style broadcast.</p>
+</section>
+
+<section id="binary">
+<h2>5. Binary, Subnet Masks & Network Boundaries</h2>
+<p>An IPv4 address has 32 bits. A subnet mask tells you which bits represent the network and which represent hosts.</p>
+<pre>192.168.1.10
+11000000.10101000.00000001.00001010
+
+255.255.255.0
+11111111.11111111.11111111.00000000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+network bits = 24
+host bits    = 8</pre>
+<p><b>AND operation:</b> IP AND mask = network address.</p>
+<pre>192.168.1.10
+AND 255.255.255.0
+=   192.168.1.0  ← network address</pre>
+<table>
+<tr><th>CIDR</th><th>Mask</th><th>Total addresses</th><th>Traditional usable hosts*</th></tr>
+<tr><td>/24</td><td>255.255.255.0</td><td>256</td><td>254</td></tr>
+<tr><td>/25</td><td>255.255.255.128</td><td>128</td><td>126</td></tr>
+<tr><td>/26</td><td>255.255.255.192</td><td>64</td><td>62</td></tr>
+<tr><td>/27</td><td>255.255.255.224</td><td>32</td><td>30</td></tr>
+<tr><td>/28</td><td>255.255.255.240</td><td>16</td><td>14</td></tr>
+<tr><td>/29</td><td>255.255.255.248</td><td>8</td><td>6</td></tr>
+<tr><td>/30</td><td>255.255.255.252</td><td>4</td><td>2</td></tr>
+</table>
+<p class="small">*The traditional host calculation excludes network and broadcast addresses. Cloud platforms may reserve additional addresses and have service-specific behavior.</p>
+</section>
+
+<section id="cidr">
+<h2>6. CIDR — Classless Inter-Domain Routing</h2>
+<p>CIDR notation is <code>network/prefix</code>. Example: <code>10.20.0.0/16</code> means the first 16 bits are network bits.</p>
+<div class="grid">
+<div class="card"><span class="kpi">/8</span><br>24 host bits → 16,777,216 total addresses</div>
+<div class="card"><span class="kpi">/16</span><br>16 host bits → 65,536 total</div>
+<div class="card"><span class="kpi">/24</span><br>8 host bits → 256 total</div>
+<div class="card"><span class="kpi">/32</span><br>One exact IPv4 address</div>
+</div>
+<h3>Host formula</h3>
+<pre>Total IPv4 addresses = 2^(32 - prefix)
+
+Traditional usable hosts = 2^(32-prefix) - 2</pre>
+<h3>Why /32 matters in DevOps</h3>
+<p>A <code>/32</code> commonly represents one exact host in allowlists, routes, VPN rules or security rules. In AWS Security Groups, a single IPv4 source is commonly written as <code>x.x.x.x/32</code>.</p>
+<h3>Route summarization</h3>
+<p>Multiple networks can sometimes be represented by a larger aggregate route. This reduces routing-table size and simplifies operations, provided the summarized range is correct.</p>
+</section>
+
+<section id="subnet">
+<h2>7. Subnetting — From Beginner to VLSM</h2>
+<h3>Example: Split 192.168.10.0/24 into four equal subnets</h3>
+<p>Need 4 subnets → borrow 2 host bits → <code>/26</code>.</p>
+<table>
+<tr><th>Subnet</th><th>Network</th><th>Usable range (traditional)</th><th>Broadcast</th></tr>
+<tr><td>1</td><td>192.168.10.0/26</td><td>.1 – .62</td><td>.63</td></tr>
+<tr><td>2</td><td>192.168.10.64/26</td><td>.65 – .126</td><td>.127</td></tr>
+<tr><td>3</td><td>192.168.10.128/26</td><td>.129 – .190</td><td>.191</td></tr>
+<tr><td>4</td><td>192.168.10.192/26</td><td>.193 – .254</td><td>.255</td></tr>
+</table>
+<h3>VLSM</h3>
+<p>Variable Length Subnet Masking means using different prefix lengths according to capacity needs.</p>
+<pre>10.0.0.0/16
+├── 10.0.0.0/20     large application tier
+├── 10.0.16.0/22    medium tier
+├── 10.0.20.0/24    small service tier
+└── 10.0.21.0/28    tiny management segment</pre>
+<div class="callout warn"><b>Production principle:</b> Do not allocate giant flat subnets simply because addresses are cheap. Plan growth, failure domains, routing, security boundaries and IP overlap before choosing CIDRs.</div>
+</section>
+
+<section id="routing">
+<h2>8. Routing</h2>
+<p>A route generally contains a destination prefix and a next hop/interface/target. Routers choose the most specific matching route (longest-prefix match).</p>
+<pre>Destination       Next hop
+10.0.0.0/16       local
+10.0.20.0/24      router-A
+0.0.0.0/0         Internet/NAT gateway</pre>
+<h3>Default route</h3>
+<p><code>0.0.0.0/0</code> matches IPv4 destinations that do not have a more specific route.</p>
+<h3>Routing example</h3>
+<div class="diagram">
+Client 10.0.1.10
+      |
+      | route for 10.0.2.0/24
+      v
+Router
+      |
+      v
+Server 10.0.2.20
+</div>
+<h3>Static vs dynamic routing</h3>
+<table>
+<tr><th>Static</th><td>Manually configured; predictable and simple for small/specific paths.</td></tr>
+<tr><th>Dynamic</th><td>Protocols such as BGP/OSPF exchange route information; useful at scale.</td></tr>
+</table>
+</section>
+
+<section id="protocols">
+<h2>9. TCP, UDP & Ports</h2>
+<table>
+<tr><th>TCP</th><th>UDP</th></tr>
+<tr><td>Connection-oriented</td><td>Connectionless</td></tr>
+<tr><td>Reliable ordered byte stream</td><td>No built-in delivery guarantee</td></tr>
+<tr><td>Handshake, retransmission, congestion control</td><td>Lower overhead</td></tr>
+<tr><td>HTTP(S), SSH, DB connections</td><td>DNS queries, streaming/real-time workloads, QUIC uses UDP</td></tr>
+</table>
+<h3>TCP 3-way handshake</h3>
+<pre>Client                    Server
+  | ---- SYN ------------> |
+  | <--- SYN-ACK ---------- |
+  | ---- ACK -------------> |
+  |       connection       |</pre>
+<h3>Common ports</h3>
+<table>
+<tr><th>Port</th><th>Service</th></tr>
+<tr><td>22</td><td>SSH</td></tr>
+<tr><td>53</td><td>DNS TCP/UDP</td></tr>
+<tr><td>80</td><td>HTTP</td></tr>
+<tr><td>443</td><td>HTTPS</td></tr>
+<tr><td>3306</td><td>MySQL</td></tr>
+<tr><td>5432</td><td>PostgreSQL</td></tr>
+<tr><td>6379</td><td>Redis</td></tr>
+<tr><td>8080</td><td>Common alternate HTTP/application port</td></tr>
+<tr><td>6443</td><td>Kubernetes API server, commonly</td></tr>
+</table>
+<div class="callout"><b>Important:</b> A port being "open" does not prove the application is healthy. Check listener, firewall, route, DNS, TLS and application logs.</div>
+</section>
+
+<section id="dns">
+<h2>10. DNS</h2>
+<p>DNS translates names to records. A typical request may involve a client resolver, recursive resolver, root servers, TLD servers and an authoritative DNS server.</p>
+<table>
+<tr><th>Record</th><th>Purpose</th></tr>
+<tr><td>A</td><td>Name → IPv4 address</td></tr>
+<tr><td>AAAA</td><td>Name → IPv6 address</td></tr>
+<tr><td>CNAME</td><td>Alias to another DNS name</td></tr>
+<tr><td>MX</td><td>Mail server routing</td></tr>
+<tr><td>TXT</td><td>Text/verification/policy data</td></tr>
+<tr><td>NS</td><td>Authoritative name servers</td></tr>
+<tr><td>SOA</td><td>Zone authority metadata</td></tr>
+<tr><td>PTR</td><td>Reverse DNS: IP → name</td></tr>
+</table>
+<h3>Production DNS issues</h3>
+<ul>
+<li>Wrong record or zone.</li><li>TTL/cache delaying changes.</li><li>Private/public DNS confusion.</li>
+<li>Resolver failure.</li><li>Split-horizon DNS returning different answers internally and externally.</li>
+<li>Application connecting to an old IP after deployment.</li>
+</ul>
+</section>
+
+<section id="arp">
+<h2>11. ARP, ICMP & DHCP</h2>
+<h3>ARP</h3>
+<p>In IPv4 LANs, ARP discovers the MAC address associated with a local IPv4 address. Modern Linux also uses the broader neighbor subsystem to manage L2/L3 neighbor information.</p>
+<h3>ICMP</h3>
+<p>Used for network control and diagnostics. <code>ping</code> commonly uses ICMP Echo Request/Reply. Traceroute can use ICMP, UDP or TCP depending on implementation/options.</p>
+<h3>DHCP</h3>
+<p>Automatically provides network configuration such as IP address, subnet mask/prefix, gateway and DNS. Remember DORA: Discover → Offer → Request → Acknowledge.</p>
+</section>
+
+<section id="nat">
+<h2>12. NAT</h2>
+<p>Network Address Translation changes source and/or destination addressing as traffic crosses a boundary.</p>
+<div class="diagram">
+Private clients
+10.0.1.10:51000 ─┐
+10.0.1.11:51001 ─┼──> NAT ──> Public IP:ephemeral-port ──> Internet
+10.0.1.12:51002 ─┘
+</div>
+<h3>Common types</h3>
+<ul>
+<li><b>SNAT:</b> changes source address, common for private → Internet.</li>
+<li><b>DNAT:</b> changes destination address, common in port forwarding/load-balancing patterns.</li>
+<li><b>PAT:</b> many private connections share one public IP through different ports.</li>
+</ul>
+<h3>AWS NAT Gateway</h3>
+<p>A private subnet can route Internet-bound traffic to a NAT Gateway in a public subnet. The NAT Gateway uses a public address for outbound Internet connectivity while preventing unsolicited inbound Internet connections to the private instances through that NAT path.</p>
+</section>
+
+<section id="security">
+<h2>13. Network Security</h2>
+<h3>Firewall thinking</h3>
+<p>For any failed connection ask: <b>source IP → destination IP → protocol → destination port → route → security policy → listener → application response</b>.</p>
+<table>
+<tr><th>Control</th><th>Typical role</th></tr>
+<tr><td>Security Group</td><td>Stateful virtual firewall associated with AWS resources such as ENIs/instances.</td></tr>
+<tr><td>NACL</td><td>Stateless subnet-level traffic control in AWS.</td></tr>
+<tr><td>Host firewall</td><td>iptables/nftables/ufw/firewalld on the machine.</td></tr>
+<tr><td>WAF</td><td>HTTP-aware filtering for web applications.</td></tr>
+<tr><td>Network firewall</td><td>Centralized network inspection/filtering use cases.</td></tr>
+</table>
+<div class="callout danger"><b>Least privilege:</b> Avoid <code>0.0.0.0/0</code> for sensitive ports such as databases and SSH unless there is a deliberate, protected architecture that requires it.</div>
+</section>
+
+<section id="aws">
+<h2>14. AWS Networking — How Everything Connects</h2>
+<div class="diagram">
+                         Internet
+                            |
+                     Internet Gateway
+                            |
+                    Public Route Table
+                      /             \
+               Public Subnet      Public Subnet
+                    |                  |
+                  ALB              NAT Gateway
+                    |                  |
+             Private Route Table       |
+                 |                     |
+          +------+------+              |
+          |             |              |
+       App EC2       App EC2 <----------+
+          |
+       Private subnet
+          |
+       RDS / internal services
+
+VPC
+├── CIDR
+├── Public/private subnets
+├── Route tables
+├── Internet Gateway
+├── NAT Gateway
+├── Security Groups
+├── Network ACLs
+├── VPC endpoints
+├── DNS
+└── Flow Logs
+</div>
+<h3>Core AWS components</h3>
+<table>
+<tr><th>Component</th><th>Definition</th><th>Use case</th></tr>
+<tr><td>VPC</td><td>Logically isolated virtual network</td><td>Network boundary for workloads</td></tr>
+<tr><td>Subnet</td><td>IP range within a VPC, associated with one AZ</td><td>Separate workloads/failure domains</td></tr>
+<tr><td>Route Table</td><td>Rules controlling where traffic goes</td><td>Local, Internet, NAT, peering, TGW, endpoints</td></tr>
+<tr><td>Internet Gateway</td><td>VPC component enabling Internet connectivity for appropriately routed public resources</td><td>Public-facing resources</td></tr>
+<tr><td>NAT Gateway</td><td>Managed outbound NAT service</td><td>Private subnet → Internet</td></tr>
+<tr><td>VPC Endpoint</td><td>Private connectivity to supported AWS services</td><td>Reduce Internet/NAT dependency</td></tr>
+<tr><td>ALB</td><td>Layer 7 load balancer</td><td>HTTP/HTTPS routing</td></tr>
+<tr><td>NLB</td><td>Layer 4 load balancer</td><td>TCP/UDP/TLS and high-performance use cases</td></tr>
+<tr><td>Route 53</td><td>DNS and traffic management service</td><td>Name resolution, routing policies, health checks</td></tr>
+<tr><td>Transit Gateway</td><td>Central network transit hub</td><td>Connect many VPCs/VPNs</td></tr>
+<tr><td>VPC Peering</td><td>Private connection between VPCs</td><td>Direct VPC-to-VPC connectivity</td></tr>
+<tr><td>VPN</td><td>Encrypted tunnel connectivity</td><td>On-prem ↔ AWS or remote access designs</td></tr>
+</table>
+
+<h3>Public vs private subnet in AWS</h3>
+<p>A subnet is commonly called <b>public</b> when its route table has a route to an Internet Gateway. A subnet is commonly called <b>private</b> when it has no direct Internet Gateway route; it may use a NAT Gateway for outbound Internet access.</p>
+
+<h3>Security Group example</h3>
+<pre>ALB-SG:
+  inbound TCP 443 from 0.0.0.0/0
+
+APP-SG:
+  inbound TCP 8080 from ALB-SG
+  outbound as required
+
+DB-SG:
+  inbound TCP 3306 from APP-SG
+  NOT from 0.0.0.0/0</pre>
+
+<h3>End-to-end web request</h3>
+<ol>
+<li>Client resolves <code>app.example.com</code> using DNS.</li>
+<li>Client connects to the ALB public address on TCP 443.</li>
+<li>ALB terminates TLS or passes TLS through, depending on design.</li>
+<li>ALB selects a healthy target.</li>
+<li>Target SG permits traffic from the ALB SG on the application port.</li>
+<li>Application reaches the database over a private route.</li>
+<li>DB SG permits only the application tier.</li>
+<li>Private application instances use NAT Gateway or VPC endpoints for required outbound AWS/Internet access.</li>
+</ol>
+</section>
+
+<section id="docker">
+<h2>15. Docker Networking</h2>
+<table>
+<tr><th>Network</th><th>Use</th></tr>
+<tr><td>bridge</td><td>Default isolated container networking on a Docker host.</td></tr>
+<tr><td>host</td><td>Container shares host network namespace; less isolation.</td></tr>
+<tr><td>none</td><td>No normal network connectivity.</td></tr>
+<tr><td>overlay</td><td>Multi-host networking in Docker Swarm contexts.</td></tr>
+</table>
+<h3>Container-to-container example</h3>
+<pre>docker network create app-net
+docker run -d --name mysql --network app-net mysql:8
+docker run -d --name backend --network app-net my-backend:latest</pre>
+<p>The backend can normally reach MySQL using the container/service name <code>mysql</code>, rather than relying on a hard-coded container IP.</p>
+<h3>Useful commands</h3>
+<pre>docker network ls
+docker network inspect app-net
+docker inspect backend
+docker exec -it backend sh
+docker exec backend getent hosts mysql</pre>
+</section>
+
+<section id="k8s">
+<h2>16. Kubernetes Networking</h2>
+<p>Kubernetes networking is based on the idea that pods can communicate across nodes without requiring application-level NAT between pod endpoints in a conforming cluster network.</p>
+<div class="diagram">
+Internet
+   |
+Ingress / LoadBalancer
+   |
+Service
+   |
++----------------------+
+| Kubernetes Cluster   |
+|                      |
+|  Service ClusterIP   |
+|       |              |
+|   Pod Pod Pod         |
+|    |   |   |         |
+|   Node Node Node      |
++----------------------+
+</div>
+<table>
+<tr><th>Object</th><th>Purpose</th></tr>
+<tr><td>Pod IP</td><td>IP assigned to a pod by the cluster networking implementation</td></tr>
+<tr><td>Service</td><td>Stable virtual endpoint for a set of pods</td></tr>
+<tr><td>ClusterIP</td><td>Internal service endpoint</td></tr>
+<tr><td>NodePort</td><td>Exposes a service through a port on nodes</td></tr>
+<tr><td>LoadBalancer</td><td>Requests an external load-balancer integration</td></tr>
+<tr><td>Ingress</td><td>HTTP/HTTPS routing into services via an ingress controller</td></tr>
+<tr><td>NetworkPolicy</td><td>Controls allowed pod traffic when supported by the CNI</td></tr>
+</table>
+<h3>DNS</h3>
+<p>Cluster DNS lets workloads resolve service names such as <code>my-service.my-namespace.svc.cluster.local</code>.</p>
+</section>
+
+<section id="linux">
+<h2>17. Linux Networking Commands</h2>
+<table>
+<tr><th>Command</th><th>Purpose</th></tr>
+<tr><td><code>ip addr</code></td><td>View interfaces and addresses</td></tr>
+<tr><td><code>ip route</code></td><td>View routing table</td></tr>
+<tr><td><code>ip neigh</code></td><td>View neighbor/ARP information</td></tr>
+<tr><td><code>ss -lntup</code></td><td>View listening TCP/UDP sockets and processes</td></tr>
+<tr><td><code>ping</code></td><td>Basic reachability test</td></tr>
+<tr><td><code>traceroute</code></td><td>Trace path where supported</td></tr>
+<tr><td><code>tracepath</code></td><td>Path/MTU diagnostics</td></tr>
+<tr><td><code>dig</code></td><td>DNS query/debugging</td></tr>
+<tr><td><code>nslookup</code></td><td>DNS lookup</td></tr>
+<tr><td><code>curl -v</code></td><td>HTTP/TLS connection diagnostics</td></tr>
+<tr><td><code>nc -vz host port</code></td><td>Test TCP port connectivity</td></tr>
+<tr><td><code>tcpdump</code></td><td>Capture packets</td></tr>
+<tr><td><code>ethtool</code></td><td>Interface/link information</td></tr>
+<tr><td><code>journalctl</code></td><td>System/service logs</td></tr>
+<tr><td><code>nft list ruleset</code></td><td>Inspect nftables rules</td></tr>
+</table>
+<h3>Production command sequence</h3>
+<pre># 1. Is interface/address correct?
+ip addr
+
+# 2. Is route correct?
+ip route
+
+# 3. Is DNS resolving?
+getent hosts example.com
+dig example.com
+
+# 4. Can I reach the host?
+ping -c 4 10.0.2.20
+
+# 5. Can I reach the service port?
+nc -vz 10.0.2.20 443
+
+# 6. Is the service listening?
+ss -lntup
+
+# 7. Test application/TLS
+curl -vk https://example.com
+
+# 8. If still unclear, capture packets
+sudo tcpdump -ni any host 10.0.2.20 and port 443</pre>
+</section>
+
+<section id="troubleshoot">
+<h2>18. Production Troubleshooting Method</h2>
+<h3>The 7-layer practical checklist</h3>
+<ol>
+<li><b>Application:</b> Is the process running? Check logs, health endpoint, dependencies.</li>
+<li><b>Port:</b> Is the expected port listening? <code>ss -lntup</code>.</li>
+<li><b>Host firewall:</b> UFW/nftables/iptables/security agent.</li>
+<li><b>Destination security:</b> AWS SG/NACL/WAF/network firewall.</li>
+<li><b>Routing:</b> <code>ip route</code>, cloud route tables, peering/TGW/VPN.</li>
+<li><b>DNS:</b> Correct record, resolver, private/public zone, TTL.</li>
+<li><b>Packets:</b> Use flow logs, tcpdump, load-balancer logs and packet-level evidence.</li>
+</ol>
+
+<h3>Scenario: EC2 cannot reach RDS</h3>
+<pre>EC2
+ |
+ | TCP 3306
+ v
+VPC route
+ |
+ v
+RDS ENI
+ |
+RDS Security Group
+ |
+MySQL listener</pre>
+<p>Check:</p>
+<ul>
+<li>EC2 and RDS have compatible network connectivity.</li>
+<li>Route tables/local routing are correct.</li>
+<li>RDS SG allows TCP 3306 from the application SG.</li>
+<li>NACLs are not blocking traffic/return traffic.</li>
+<li>RDS is available and listening.</li>
+<li>DNS name resolves to the expected RDS endpoint.</li>
+<li>Application credentials are correct — networking success does not guarantee authentication success.</li>
+</ul>
+
+<h3>Scenario: Website times out</h3>
+<div class="grid">
+<div class="card"><b>DNS</b><br>Does name resolve?</div>
+<div class="card"><b>Route</b><br>Can client reach destination?</div>
+<div class="card"><b>Firewall</b><br>Is 443 permitted?</div>
+<div class="card"><b>Listener</b><br>Is service listening?</div>
+<div class="card"><b>LB</b><br>Are targets healthy?</div>
+<div class="card"><b>App</b><br>Is application responding?</div>
+</div>
+
+<h3>Timeout vs Connection Refused</h3>
+<table>
+<tr><th>Symptom</th><th>Possible meaning</th></tr>
+<tr><td>Timeout</td><td>Packet may be dropped, route missing, firewall/security rule blocking, service unreachable, or asymmetric path.</td></tr>
+<tr><td>Connection refused</td><td>Host is reachable but nothing is accepting the connection at that endpoint, or an active reject is being generated.</td></tr>
+<tr><td>DNS failure</td><td>Name resolution problem before the connection attempt.</td></tr>
+<tr><td>TLS error</td><td>Network connection may work; certificate/protocol/SNI/trust configuration may be wrong.</td></tr>
+<tr><td>HTTP 4xx</td><td>Request reached an HTTP server/proxy, but request/auth/client-side condition failed.</td></tr>
+<tr><td>HTTP 5xx</td><td>Server-side/proxy/upstream failure.</td></tr>
+</table>
+
+<h3>Observability</h3>
+<p>For production, combine metrics, logs and traces. Network-specific evidence may include VPC Flow Logs, load-balancer access logs, application logs, DNS query logs, host socket state and packet captures.</p>
+</section>
+
+<section id="architecture">
+<h2>19. Production Architectures</h2>
+<h3>Highly available AWS 3-tier pattern</h3>
+<div class="diagram">
+                    Route 53
+                       |
+                 Internet / DNS
+                       |
+                  ALB :443
+                  /       \
+             AZ-A          AZ-B
+          Public/ALB     Public/ALB
+             |               |
+        Private App       Private App
+             | \           / |
+             |  \         /  |
+             +--- Database ----+
+                  Multi-AZ
+
+Private outbound:
+App → NAT Gateway / VPC Endpoints
+
+Security:
+Internet → ALB only
+ALB → App only
+App → DB only
+</div>
+<h3>DevOps networking principles</h3>
+<ul>
+<li>Use multiple Availability Zones for critical services.</li>
+<li>Keep databases private.</li>
+<li>Use security groups based on workload identity rather than broad IP ranges where possible.</li>
+<li>Use private connectivity/endpoints for AWS services when appropriate.</li>
+<li>Plan non-overlapping CIDRs before connecting VPCs/on-prem networks.</li>
+<li>Automate network configuration with IaC such as Terraform/CloudFormation.</li>
+<li>Monitor flow, latency, errors, DNS and saturation.</li>
+<li>Document ports and traffic flows.</li>
+</ul>
+</section>
+
+<section id="interview">
+<h2>20. Interview Questions & Answers</h2>
+
+<details><summary>1. What is an IP address?</summary><p>An IP address is a logical network address used to identify an interface or endpoint at the network layer and enable packet routing.</p></details>
+<details><summary>2. What is a subnet?</summary><p>A subnet is a defined range of IP addresses within a larger network. Subnetting divides an address space into smaller routing/security/organizational boundaries.</p></details>
+<details><summary>3. What is CIDR?</summary><p>CIDR is classless notation that represents an IP network using a prefix length, such as 10.0.0.0/16.</p></details>
+<details><summary>4. What does /24 mean?</summary><p>24 of the 32 IPv4 bits are network bits and 8 are host bits. It contains 256 IPv4 addresses; traditional usable host count is 254.</p></details>
+<details><summary>5. Difference between public and private IP?</summary><p>Private addresses are intended for internal networks and are not globally routable. Public addresses can be Internet-routable.</p></details>
+<details><summary>6. What is a default gateway?</summary><p>It is the next-hop router used when a destination does not match a more specific route in the host's routing table.</p></details>
+<details><summary>7. What is TCP's 3-way handshake?</summary><p>SYN, SYN-ACK, ACK. It establishes the TCP connection state and synchronizes sequence numbers.</p></details>
+<details><summary>8. TCP vs UDP?</summary><p>TCP provides a reliable ordered byte stream with connection management and congestion control. UDP provides datagrams with lower protocol overhead and no built-in reliability.</p></details>
+<details><summary>9. What is DNS?</summary><p>DNS is a distributed naming system that maps names to records such as IP addresses and service information.</p></details>
+<details><summary>10. What is NAT?</summary><p>NAT translates network addressing. SNAT commonly changes source addresses for outbound traffic; DNAT changes destinations.</p></details>
+<details><summary>11. What is a route table?</summary><p>A route table contains destination prefixes and targets/next hops that determine where traffic is forwarded.</p></details>
+<details><summary>12. Security Group vs NACL in AWS?</summary><p>Security Groups are stateful controls associated with network interfaces/resources. NACLs are stateless controls applied at the subnet boundary.</p></details>
+<details><summary>13. Why can't a private subnet directly access the Internet?</summary><p>In a common AWS design, the private subnet has no direct route to an Internet Gateway. Outbound Internet traffic is routed to a NAT Gateway, which is in a public subnet.</p></details>
+<details><summary>14. Why is a NAT Gateway placed in a public subnet?</summary><p>Because it needs a route to an Internet Gateway and a public address for Internet-bound outbound traffic.</p></details>
+<details><summary>15. What happens when you type https://example.com?</summary><p>Typically: DNS resolution → route selection → TCP connection (or another transport such as QUIC/UDP for HTTP/3) → TLS negotiation → HTTP request → server/load balancer processing → response.</p></details>
+<details><summary>16. How do you troubleshoot "connection timed out"?</summary><p>Check DNS, source/destination IPs, routes, SG/NACL/firewall rules, listener state, load balancer health, return path and packet evidence using flow logs/tcpdump.</p></details>
+<details><summary>17. How do you check whether port 8080 is listening on Linux?</summary><p>Use <code>ss -lntup | grep :8080</code>. Then inspect the owning process and application logs.</p></details>
+<details><summary>18. ping works but curl fails. Why?</summary><p>ICMP reachability does not prove TCP/HTTP reachability. Port 443/8080 could be blocked, the service may not listen, TLS may fail, a proxy may intervene, or the application may return an error.</p></details>
+<details><summary>19. DNS resolves but application is unreachable. What next?</summary><p>Test the resolved IP/port, inspect routes and security controls, verify the listener, then test with curl/nc and inspect logs.</p></details>
+<details><summary>20. What is a /32?</summary><p>A prefix containing one IPv4 address. It is commonly used to identify a single host in routes or allowlists.</p></details>
+<details><summary>21. What is longest-prefix match?</summary><p>When multiple routes match a destination, the route with the most specific/longest prefix is preferred.</p></details>
+<details><summary>22. What is VLSM?</summary><p>Variable Length Subnet Masking uses different subnet sizes within an address space to allocate addresses efficiently.</p></details>
+<details><summary>23. What is an ALB?</summary><p>An AWS Application Load Balancer operates at the application layer and supports HTTP/HTTPS routing features such as host/path-based routing.</p></details>
+<details><summary>24. ALB vs NLB?</summary><p>ALB is primarily Layer 7 HTTP/HTTPS-aware load balancing. NLB is Layer 4-oriented and is suited to TCP/UDP/TLS and workloads requiring high-performance connection handling.</p></details>
+<details><summary>25. What is VPC peering?</summary><p>A private network connection between two VPCs that allows routing between their address spaces, subject to routes and security controls.</p></details>
+<details><summary>26. What problem does Transit Gateway solve?</summary><p>It provides a central routing hub for connecting many VPCs and other network attachments, reducing a complex mesh of point-to-point connections.</p></details>
+<details><summary>27. Why avoid overlapping CIDRs?</summary><p>Overlapping ranges make routing ambiguous or impossible across many network connections such as peering, VPNs and transit architectures.</p></details>
+<details><summary>28. What is a reverse proxy?</summary><p>A server that accepts client requests and forwards them to backend services. It can provide TLS termination, routing, caching, authentication and load distribution.</p></details>
+<details><summary>29. What is a load balancer health check?</summary><p>A periodic probe used to determine whether a backend target is capable of receiving traffic. A target can be network-reachable yet fail its application health check.</p></details>
+<details><summary>30. How would you secure an AWS database?</summary><p>Keep it private, restrict its security group to the application tier, minimize exposed ports, use encryption/authentication, monitor access, and avoid public Internet exposure unless explicitly required.</p></details>
+<details><summary>31. How does Docker DNS help?</summary><p>User-defined Docker networks provide service/container name resolution so containers can communicate using stable names rather than hard-coded container IP addresses.</p></details>
+<details><summary>32. What is a Kubernetes Service?</summary><p>A stable virtual endpoint that selects pods and provides service discovery/load distribution across matching backends.</p></details>
+<details><summary>33. What is MTU?</summary><p>Maximum Transmission Unit is the largest packet payload size that can be carried over a link without fragmentation at that layer. Incorrect MTU can cause intermittent connectivity, especially with tunnels.</p></details>
+<details><summary>34. What is asymmetric routing?</summary><p>Traffic from A to B follows a different path from B to A. It can cause problems with stateful firewalls, troubleshooting and packet capture interpretation.</p></details>
+<details><summary>35. How would you investigate packet loss?</summary><p>Establish whether loss occurs at the host, network segment, firewall, load balancer or destination. Compare ping/transport tests, interface counters, flow logs and packet captures, and check saturation/errors.</p></details>
+</section>
+
+<section id="cheat">
+<h2>21. Cheat Sheets</h2>
+<h3>CIDR quick reference</h3>
+<table>
+<tr><th>Prefix</th><th>Mask</th><th>Total IPv4 addresses</th></tr>
+<tr><td>/16</td><td>255.255.0.0</td><td>65,536</td></tr>
+<tr><td>/17</td><td>255.255.128.0</td><td>32,768</td></tr>
+<tr><td>/18</td><td>255.255.192.0</td><td>16,384</td></tr>
+<tr><td>/19</td><td>255.255.224.0</td><td>8,192</td></tr>
+<tr><td>/20</td><td>255.255.240.0</td><td>4,096</td></tr>
+<tr><td>/21</td><td>255.255.248.0</td><td>2,048</td></tr>
+<tr><td>/22</td><td>255.255.252.0</td><td>1,024</td></tr>
+<tr><td>/23</td><td>255.255.254.0</td><td>512</td></tr>
+<tr><td>/24</td><td>255.255.255.0</td><td>256</td></tr>
+<tr><td>/25</td><td>255.255.255.128</td><td>128</td></tr>
+<tr><td>/26</td><td>255.255.255.192</td><td>64</td></tr>
+<tr><td>/27</td><td>255.255.255.224</td><td>32</td></tr>
+<tr><td>/28</td><td>255.255.255.240</td><td>16</td></tr>
+<tr><td>/29</td><td>255.255.255.248</td><td>8</td></tr>
+<tr><td>/30</td><td>255.255.255.252</td><td>4</td></tr>
+<tr><td>/32</td><td>255.255.255.255</td><td>1</td></tr>
+</table>
+<h3>Common troubleshooting chain</h3>
+<pre>DNS
+ ↓
+IP
+ ↓
+Route
+ ↓
+Firewall / SG / NACL
+ ↓
+TCP port
+ ↓
+TLS
+ ↓
+HTTP
+ ↓
+Application
+ ↓
+Dependency (DB/API/cache)</pre>
+<h3>Useful Linux commands</h3>
+<pre>ip addr
+ip route
+ip neigh
+ss -lntup
+ping -c 4 HOST
+tracepath HOST
+dig HOST
+getent hosts HOST
+curl -v URL
+nc -vz HOST PORT
+sudo tcpdump -ni any port PORT</pre>
+</section>
+
+<section id="calculator">
+<h2>22. CIDR Calculator</h2>
+<div class="card">
+<p>Enter an IPv4 address and prefix. The calculator shows the network, broadcast, first/last traditional usable address and total addresses.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<input id="ipInput" value="192.168.10.25" placeholder="IPv4 address">
+<input id="prefixInput" type="number" min="0" max="32" value="24" placeholder="Prefix">
+<button onclick="calculateCIDR()">Calculate</button>
+</div>
+<pre id="calcResult">Enter a value and click Calculate.</pre>
+</div>
+</section>
+
+<section>
+<h2>Final Production Mindset</h2>
+<div class="callout success">
+<b>Don't memorize networking only as definitions.</b> In a DevOps interview or production incident, trace the traffic.
+<br><br>
+<b>Source → Destination → DNS → Route → Security → Port → Listener → Protocol → Application → Dependency → Return path.</b>
+</div>
+<p>When you can draw the traffic path and explain every hop, networking becomes much easier to troubleshoot.</p>
+</section>
+
+</main>
+</div>
+
+<button id="topBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
+
+<script>
+function ipToInt(ip){
+  const p=ip.trim().split('.').map(Number);
+  if(p.length!==4 || p.some(x=>!Number.isInteger(x)||x<0||x>255)) throw new Error("Invalid IPv4 address");
+  return (((p[0]*256+p[1])*256+p[2])*256+p[3])>>>0;
+}
+function intToIp(n){
+  n=Number(n)>>>0;
+  return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+}
+function calculateCIDR(){
+  const out=document.getElementById('calcResult');
+  try{
+    const ip=document.getElementById('ipInput').value;
+    const prefix=Number(document.getElementById('prefixInput').value);
+    if(!Number.isInteger(prefix)||prefix<0||prefix>32) throw new Error("Prefix must be 0–32");
+    const i=ipToInt(ip);
+    const mask=prefix===0?0:(0xFFFFFFFF << (32-prefix))>>>0;
+    const network=(i&mask)>>>0;
+    const total=2**(32-prefix);
+    const broadcast=(network+total-1)>>>0;
+    let first,last,usable;
+    if(prefix<=30){first=network+1;last=broadcast-1;usable=total-2}
+    else if(prefix===31){first=network;last=broadcast;usable=2}
+    else{first=network;last=network;usable=1}
+    out.textContent =
+`Input:             ${ip}/${prefix}
+Subnet mask:       ${intToIp(mask)}
+Network address:   ${intToIp(network)}
+Broadcast address: ${intToIp(broadcast)}
+First usable*:     ${intToIp(first)}
+Last usable*:      ${intToIp(last)}
+Total addresses:   ${total}
+Usable*:           ${usable}
+
+*Traditional host interpretation; cloud platforms may reserve addresses or treat prefixes differently.`;
+  }catch(e){out.textContent="Error: "+e.message}
+}
+document.getElementById('search').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  document.querySelectorAll('#toc a').forEach(a=>{
+    a.style.display=a.textContent.toLowerCase().includes(q)?'block':'none';
+  });
+});
+window.addEventListener('scroll',()=>{
+  document.getElementById('topBtn').style.display=scrollY>500?'block':'none';
+});
+calculateCIDR();
+</script>
+</body>
+</html>

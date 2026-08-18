@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>console:~ interview-prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0F1A;
+    --panel:#101826;
+    --panel-2:#141F32;
+    --line:#22304A;
+    --text:#E8EDF5;
+    --muted:#7E8CA3;
+    --muted-2:#57647A;
+    --aws:#FF9900;
+    --aws-dim:#7A5420;
+    --green:#43D18A;
+    --blue:#5AA9E6;
+    --red:#FF6B6B;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(255,153,0,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(90,169,230,0.07), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--aws); color:#1a1200;}
+
+  /* ---------- top bar ---------- */
+  .titlebar{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 20px;
+    border-bottom:1px solid var(--line);
+    background:rgba(16,24,38,0.7);
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(10px);
+  }
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.r{background:#FF5F57;} .dot.y{background:#FEBC2E;} .dot.g{background:#28C840;}
+  .titlebar .path{
+    margin-left:14px; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    letter-spacing:0.02em;
+  }
+  .titlebar .path b{color:var(--aws); font-weight:600;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1180px; margin:0 auto;
+    padding:52px 28px 30px;
+    border-bottom:1px solid var(--line);
+  }
+  .prompt-line{
+    font-family:var(--mono); font-size:13px; color:var(--green);
+    display:flex; align-items:center; gap:8px; margin-bottom:18px;
+  }
+  .prompt-line .user{color:var(--blue);}
+  .prompt-line .at{color:var(--muted-2);}
+  .cursor{
+    display:inline-block; width:8px; height:15px; background:var(--aws);
+    animation:blink 1.1s steps(1) infinite; margin-left:2px; vertical-align:middle;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  h1{
+    font-family:var(--sans); font-weight:800; font-size:clamp(30px,4.2vw,46px);
+    line-height:1.08; margin:0 0 14px; letter-spacing:-0.02em;
+  }
+  h1 .accent{color:var(--aws);}
+  .hero p.sub{
+    color:var(--muted); font-size:15.5px; max-width:640px; line-height:1.6; margin:0 0 26px;
+  }
+  .stat-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .stat{
+    font-family:var(--mono); font-size:11.5px; color:var(--muted);
+    border:1px solid var(--line); background:var(--panel);
+    padding:7px 12px; border-radius:6px;
+  }
+  .stat b{color:var(--text); font-weight:600;}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px; display:flex; gap:28px;}
+  nav.sidebar{
+    width:250px; flex-shrink:0;
+    position:sticky; top:64px; align-self:flex-start;
+    padding:26px 0 40px;
+  }
+  .search-box{
+    display:flex; align-items:center; gap:8px;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:9px 12px; margin-bottom:18px;
+  }
+  .search-box input{
+    background:none; border:none; outline:none; color:var(--text);
+    font-family:var(--mono); font-size:12.5px; width:100%;
+  }
+  .search-box input::placeholder{color:var(--muted-2);}
+  .search-box svg{flex-shrink:0;}
+  .navlabel{
+    font-family:var(--mono); font-size:10.5px; color:var(--muted-2);
+    text-transform:uppercase; letter-spacing:0.12em; margin:0 0 8px 4px;
+  }
+  .catlist{list-style:none; margin:0 0 22px; padding:0;}
+  .catlist li{margin-bottom:2px;}
+  .catlist button{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    color:var(--muted); font-family:var(--sans); font-size:13.5px; font-weight:500;
+    padding:8px 10px; border-radius:7px; display:flex; align-items:center; gap:9px;
+    transition:background .15s, color .15s;
+  }
+  .catlist button .ct{
+    font-family:var(--mono); font-size:10.5px; color:var(--muted-2);
+    background:var(--panel); border:1px solid var(--line); border-radius:4px;
+    padding:1px 6px; margin-left:auto;
+  }
+  .catlist button:hover{background:var(--panel); color:var(--text);}
+  .catlist button.active{background:var(--panel-2); color:var(--text); box-shadow:inset 2px 0 0 var(--aws);}
+  .catlist button.active .ct{color:var(--aws); border-color:var(--aws-dim);}
+
+  .sidenote{
+    font-family:var(--mono); font-size:11px; line-height:1.7; color:var(--muted-2);
+    border-top:1px solid var(--line); padding-top:16px;
+  }
+  .sidenote span{color:var(--green);}
+
+  /* ---------- main ---------- */
+  main{flex:1; min-width:0; padding:26px 0 80px;}
+  .section{margin-bottom:44px;}
+  .section-head{
+    display:flex; align-items:baseline; gap:12px; margin-bottom:16px;
+    padding-bottom:10px; border-bottom:1px solid var(--line);
+  }
+  .section-head h2{
+    font-size:19px; margin:0; font-weight:700; letter-spacing:-0.01em;
+  }
+  .section-head .idx{font-family:var(--mono); color:var(--aws); font-size:13px;}
+  .section-head .count{font-family:var(--mono); color:var(--muted-2); font-size:11.5px; margin-left:auto;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    margin-bottom:10px; overflow:hidden; transition:border-color .15s;
+  }
+  .card.open{border-color:var(--aws-dim);}
+  .qrow{
+    display:flex; align-items:flex-start; gap:12px; padding:15px 16px;
+    cursor:pointer; user-select:none;
+  }
+  .prompt-tag{
+    font-family:var(--mono); font-size:12.5px; color:var(--green); flex-shrink:0;
+    padding-top:1px;
+  }
+  .qtext{font-size:14.5px; font-weight:600; line-height:1.5; flex:1;}
+  .chev{
+    font-family:var(--mono); color:var(--muted-2); font-size:13px; flex-shrink:0;
+    transition:transform .2s; margin-top:2px;
+  }
+  .card.open .chev{transform:rotate(90deg); color:var(--aws);}
+  .answer{
+    max-height:0; overflow:hidden; transition:max-height .28s ease;
+  }
+  .answer-inner{
+    padding:0 16px 18px 16px;
+    font-size:13.8px; line-height:1.68; color:#C6D0E0;
+    border-top:1px dashed var(--line); margin:0 16px;
+    padding-top:14px;
+  }
+  .answer-inner .out{color:var(--muted-2); font-family:var(--mono); font-size:11px; display:block; margin-bottom:8px;}
+  .answer-inner b{color:var(--text);}
+  .answer-inner code{
+    font-family:var(--mono); background:var(--panel-2); border:1px solid var(--line);
+    padding:1px 6px; border-radius:4px; font-size:12.3px; color:var(--aws);
+  }
+  .answer-inner ul{margin:8px 0 0; padding-left:18px;}
+  .answer-inner li{margin-bottom:5px;}
+  .tip{
+    margin-top:12px; padding:9px 12px; border-radius:7px;
+    background:rgba(67,209,138,0.07); border:1px solid rgba(67,209,138,0.22);
+    font-size:12.5px; color:#9fe6c3; font-family:var(--sans);
+  }
+  .tip b{color:var(--green);}
+
+  .empty{
+    font-family:var(--mono); color:var(--muted-2); font-size:13px; padding:30px 4px;
+  }
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:22px 28px 50px;
+    font-family:var(--mono); font-size:11.5px; color:var(--muted-2);
+    border-top:1px solid var(--line);
+  }
+
+  @media (max-width:860px){
+    .wrap{flex-direction:column;}
+    nav.sidebar{width:100%; position:relative; top:0; padding:18px 0;}
+    .catlist{display:flex; flex-wrap:wrap; gap:6px;}
+    .catlist li{margin:0;}
+    .catlist button{width:auto;}
+    .sidenote{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="path"><b>ravi@support-ops</b>:~/interview-prep$</span>
+  </div>
+
+  <div class="hero">
+    <div class="prompt-line"><span class="user">ravi</span><span class="at">@aws-l1l2</span>:~$ ./load_interview_prep.sh<span class="cursor"></span></div>
+    <h1>AWS &amp; DevOps<br><span class="accent">Interview Prep Console</span></h1>
+    <p class="sub">A fresher-friendly Q&amp;A set built around Ravi Paikine's actual stack — EC2/S3/IAM/VPC troubleshooting, SSH/RDP remote support, networking fundamentals, Linux, Docker, and the incident-handling habits an L1/L2 cloud support associate is expected to talk through in an interview.</p>
+    <div class="stat-row">
+      <div class="stat"><b>36</b> questions</div>
+      <div class="stat"><b>6</b> categories</div>
+      <div class="stat">Level: <b>Fresher → L1/L2</b></div>
+      <div class="stat">Role: <b>AWS Cloud Support Associate</b></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <nav class="sidebar">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#57647A" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="searchInput" type="text" placeholder="grep -i 'topic'...">
+      </div>
+      <div class="navlabel">Jump to</div>
+      <ul class="catlist" id="catlist"></ul>
+      <div class="sidenote"><span>#</span> tip: click any question<br>to expand the answer.<br><span>#</span> use search to filter<br>across all categories.</div>
+    </nav>
+
+    <main id="main"></main>
+  </div>
+
+  <footer>
+    # Prepared for Ravi Paikine — Technical Support Associate, IT &amp; Cloud Operations · Pune, MH<br>
+    # Rehearse answers out loud; interviewers weight clarity of explanation as much as accuracy.
+  </footer>
+
+<script>
+const DATA = [
+  {
+    cat: "AWS Core Services",
+    tag: "aws",
+    items: [
+      { q: "Walk me through what happens when you launch an EC2 instance.",
+        a: "You pick an AMI (the OS/software image), an instance type (CPU/RAM profile), a VPC and subnet to place it in, a key pair for SSH access, Security Groups for the firewall rules, and storage (EBS volumes). AWS provisions the instance on physical hardware in the chosen Availability Zone, attaches an ENI with a private IP (and a public IP if you asked for one), boots the AMI, and runs any user-data script you supplied. Within a few minutes it's in the <code>running</code> state and reachable per your Security Group rules.",
+        tip: "In support, tie this back to troubleshooting: 'instance stuck in pending' → check service health/capacity; 'can't SSH' → check SG, NACL, route table, and key pair in that order." },
+      { q: "What's the difference between S3 and EBS, and when would you use each?",
+        a: "S3 is object storage accessed over HTTP(S) — great for static files, backups, logs, and website hosting, and it's regional/durable by design (11 nines). EBS is block storage attached to a single EC2 instance (unless using Multi-Attach) — it behaves like a hard disk and is used for OS volumes, databases, and anything needing a filesystem. Rule of thumb: if an app needs a mounted drive, use EBS; if you're storing files to be fetched independently of any one server, use S3." },
+      { q: "Explain IAM in simple terms — users, groups, roles, and policies.",
+        a: "IAM controls <b>who</b> can do <b>what</b> in an AWS account. <b>Users</b> are individual identities (people or apps) with long-term credentials. <b>Groups</b> bundle users to apply the same permissions at once. <b>Roles</b> are temporary identities that get assumed — by an EC2 instance, a Lambda function, or another account — instead of embedding permanent credentials. <b>Policies</b> are JSON documents attached to any of the above that explicitly allow or deny specific actions on specific resources.",
+        tip: "A common support scenario: 'customer says Access Denied' → check the attached policy's Action/Resource/Effect, and remember explicit Deny always overrides Allow." },
+      { q: "What is a VPC, and why does every AWS account need one?",
+        a: "A VPC (Virtual Private Cloud) is your own isolated network inside AWS — a private IP address range you define, split into subnets, with its own route tables, gateways, and security controls. It's how AWS gives every customer network isolation on shared infrastructure. Every EC2, RDS, or Lambda-with-VPC-config resource lives inside a VPC, even if it's the default one AWS creates for you." },
+      { q: "How would you explain Lambda to someone who's never heard of serverless?",
+        a: "Lambda runs your code in response to an event — an API call, a file landing in S3, a schedule — without you provisioning or managing a server. AWS handles scaling, patching, and capacity; you're billed only for the compute time actually used. It's ideal for short, event-driven tasks rather than long-running processes." },
+      { q: "What's RDS, and how is it different from just running a database on EC2?",
+        a: "RDS is a managed relational database service (MySQL, PostgreSQL, SQL Server, etc.) — AWS handles patching, automated backups, Multi-AZ failover, and read replicas for you. Running a database yourself on EC2 gives full control but means you own all of that operational work manually." },
+      { q: "What is CloudFormation and why would a support engineer care about it?",
+        a: "CloudFormation lets you define infrastructure as code (a template describing VPCs, EC2s, IAM roles, etc.) and have AWS create/update/delete that whole stack consistently. As support, you'll often see customer issues traced back to a failed or drifted CloudFormation stack — knowing how to read a stack's events and identify which resource failed to create is a real diagnostic skill." },
+      { q: "What does CloudWatch actually monitor, and how have you used it?",
+        a: "CloudWatch collects metrics (CPU, network, disk, custom app metrics), logs, and lets you set alarms that trigger notifications or actions. In my VPC project I used it to monitor instance health and resource utilization, and in support work it's usually the first place to check when a customer reports 'my instance is slow' — CPU/memory graphs quickly confirm or rule out a resource bottleneck." }
+    ]
+  },
+  {
+    cat: "Networking Fundamentals",
+    tag: "net",
+    items: [
+      { q: "Explain the difference between a Security Group and a NACL.",
+        a: "A <b>Security Group</b> is stateful and attached at the instance/ENI level — it only needs an inbound (or outbound) rule for traffic; the return traffic is automatically allowed. A <b>NACL</b> is stateless and attached at the subnet level — you must explicitly allow both inbound and outbound, and rules are evaluated in numbered order, first match wins. SGs only support 'allow' rules; NACLs support both allow and deny.",
+        tip: "This is one of the most common AWS networking interview questions — be ready to draw it out or explain with a concrete example." },
+      { q: "What's the role of an Internet Gateway vs a NAT Gateway?",
+        a: "An <b>Internet Gateway (IGW)</b> is attached to the VPC and gives resources with public IPs two-way internet access — it's what makes a subnet 'public' once the route table points 0.0.0.0/0 to it. A <b>NAT Gateway</b> sits in a public subnet and lets instances in a <b>private</b> subnet initiate outbound internet traffic (e.g., for updates) without being reachable from the internet — one-way access." },
+      { q: "Walk me through DHCP in your own words.",
+        a: "DHCP automatically assigns IP configuration to a device joining a network — IP address, subnet mask, default gateway, and DNS servers — via a four-step handshake: Discover, Offer, Request, Acknowledge (DORA). Without it, every device would need manual IP configuration, which doesn't scale." },
+      { q: "How does DNS resolution work, at a high level?",
+        a: "A client asks a resolver for a domain's IP. The resolver queries the root servers, which point to the TLD servers (e.g., .com), which point to the domain's authoritative name server, which returns the actual record (usually an A or CNAME record). The result gets cached at various layers based on its TTL so repeat lookups are fast." },
+      { q: "What's subnetting and why does it matter in a VPC design?",
+        a: "Subnetting splits a larger IP range (a CIDR block) into smaller segments so you can isolate resources — for example, public subnets for load balancers/bastion hosts and private subnets for application and database servers. It also lets you spread resources across multiple Availability Zones for high availability." },
+      { q: "A customer says they can't reach their EC2 instance over SSH. How do you troubleshoot it?",
+        a: "I'd work outward in this order: (1) Is the instance actually running and passing status checks? (2) Does the Security Group allow inbound port 22 from the customer's IP? (3) Does the subnet's NACL allow it both inbound and outbound? (4) Does the route table have a path to an IGW (public subnet) or is this meant to go through a bastion/VPN? (5) Is the customer using the correct key pair and username for that AMI? (6) Any OS-level firewall (iptables/ufw) blocking it? This layered approach is exactly what I used day to day handling connectivity tickets.",
+        tip: "Interviewers love this question because it tests structured thinking, not just AWS trivia — narrate your steps out loud." },
+      { q: "What's the difference between a Route Table and a Routing Protocol?",
+        a: "A Route Table is a static set of rules in your VPC saying which destination CIDR ranges go through which target (IGW, NAT Gateway, peering connection, etc.) — you or CloudFormation define it directly. A routing protocol (like BGP or OSPF) is used by routers to dynamically discover and exchange routes across a larger network — VPCs mostly use simple static route tables rather than dynamic routing protocols, except in things like Direct Connect/VPN setups using BGP." }
+    ]
+  },
+  {
+    cat: "Linux, SSH & RDP",
+    tag: "lin",
+    items: [
+      { q: "What's the difference between SSH and RDP, and when do you use each?",
+        a: "SSH (port 22) is a secure command-line protocol, mainly used to manage Linux servers remotely — encrypted, key- or password-based. RDP (port 3389) is Microsoft's protocol for a full graphical remote desktop session, used for Windows servers/instances. As support, you pick the protocol based on the customer's OS: Linux issues → SSH in and check logs/config; Windows issues → RDP in and use the GUI or PowerShell." },
+      { q: "A customer's Linux server is running slow — what commands would you run first?",
+        a: "I'd start broad and narrow down: <code>top</code> or <code>htop</code> for CPU/memory hogs, <code>df -h</code> for disk space, <code>free -h</code> for memory, <code>uptime</code> for load average, and <code>journalctl</code> or <code>/var/log/syslog</code> for recent errors. If it's network-related, <code>netstat -tulnp</code> or <code>ss -tulnp</code> shows what's listening, and <code>ping</code>/<code>traceroute</code> checks connectivity." },
+      { q: "How do SSH key pairs work, and why are they more secure than passwords?",
+        a: "SSH uses asymmetric cryptography — you keep a private key locally and the public key sits in the server's <code>~/.ssh/authorized_keys</code>. When you connect, the server challenges your client to prove it holds the matching private key, without that key ever being transmitted. This resists brute-force and credential-stuffing attacks that plague password auth." },
+      { q: "What Linux file permission would you set so only the owner can read/write a file, and how?",
+        a: "That's <code>600</code> (rw- --- ---), set with <code>chmod 600 filename</code>. This is exactly the permission SSH expects on your private key file — SSH will actually refuse to use a key that's too open (e.g., 644)." },
+      { q: "How do you check what's using a specific port on Linux?",
+        a: "<code>sudo lsof -i :PORT</code> or <code>sudo ss -tulnp | grep PORT</code> shows the process bound to that port — useful when a customer says an application 'won't start' and it turns out another process already owns the port." }
+    ]
+  },
+  {
+    cat: "Scripting, Git & Docker",
+    tag: "dev",
+    items: [
+      { q: "Why did you containerize your Python project with Docker instead of just running it directly?",
+        a: "Docker packages the app with its exact dependencies and runtime into an image, so it runs identically on any machine — no more 'works on my machine.' In my project I used multi-stage builds to keep the final image small (build tools stripped out of the runtime image) and set up container networking so the app could talk to other services cleanly." },
+      { q: "What's the difference between a Docker image and a Docker container?",
+        a: "An image is the read-only blueprint — layers of filesystem and metadata built from a Dockerfile. A container is a running (or stopped) instance of that image, with its own writable layer on top. You can spin up many containers from the same image." },
+      { q: "What's a multi-stage Docker build, and why does it matter?",
+        a: "It uses multiple <code>FROM</code> stages in one Dockerfile — an early stage installs build tools and compiles the app, and the final stage copies only the compiled output into a slim base image. It matters because it drastically shrinks image size and attack surface, since compilers and dev dependencies never ship to production." },
+      { q: "Explain git pull vs git fetch.",
+        a: "<code>git fetch</code> downloads new commits/branches from the remote but doesn't touch your working branch — safe to run anytime to see what's changed. <code>git pull</code> does a fetch and then immediately merges (or rebases) those changes into your current branch, which can create conflicts if you have local changes." },
+      { q: "You wrote a Jenkins pipeline for a Java/Maven app — describe what it does end to end.",
+        a: "On a commit trigger, Jenkins checks out the code, runs <code>mvn build</code> to compile the Java 21 application, runs the test suite, packages it (e.g., a JAR), and then builds a Docker image from it — all automated so a human never manually runs these steps. The goal is a consistent, repeatable pipeline from commit to a deployable artifact." },
+      { q: "What's a basic Bash habit that saves time when writing support/automation scripts?",
+        a: "Starting scripts with <code>set -euo pipefail</code> — it exits immediately on an error, treats unset variables as errors, and makes pipeline failures visible instead of silently swallowed. It turns silent script failures into loud, debuggable ones." }
+    ]
+  },
+  {
+    cat: "Support Process & Incident Handling",
+    tag: "ops",
+    items: [
+      { q: "Walk me through how you'd handle a P1 (critical) incident from the moment it's assigned to you.",
+        a: "Acknowledge the ticket immediately to stop the SLA clock from being missed, gather the essential facts (what changed, when it started, blast radius), reproduce or confirm the issue, and communicate an initial status update to the customer even before I have a fix. Then I work the technical diagnosis methodically — checking the most likely/high-impact causes first — apply a fix or safe mitigation, verify resolution with the customer, and finish with a documented RCA so the same issue is faster to resolve next time.",
+        tip: "Structure your answer as: Acknowledge → Communicate → Diagnose → Fix → Verify → Document. Interviewers are grading the process, not just the technical fix." },
+      { q: "What does a good Root Cause Analysis (RCA) actually include?",
+        a: "A timeline of what happened, the actual root cause (not just the symptom), the immediate fix applied, the customer/business impact, and preventive action items so it doesn't recur. A weak RCA stops at 'restarted the service and it worked' — a strong one explains <b>why</b> the service needed restarting in the first place." },
+      { q: "How do you prioritize when you have five open tickets and only time for two before your SLA deadlines hit?",
+        a: "I'd triage by impact and SLA proximity together — a P1 affecting many users close to breach outranks a P3 with slack remaining, regardless of order received. I'd also send a quick holding update on the deprioritized tickets so customers aren't left wondering, then work the highest-priority ones methodically rather than task-switching." },
+      { q: "Tell me about a time you had to explain a technical issue to a non-technical customer.",
+        a: "This is a behavioral question you should answer with your own real example (use the STAR format: Situation, Task, Action, Result). A strong structure: briefly set the scene, explain what you actually did to fix it, then translate the fix into plain-English impact — e.g., 'their website was down because a Security Group was blocking traffic; I opened the correct port and confirmed the site was reachable again' rather than reciting CIDR ranges." },
+      { q: "How do you use Jira in day-to-day incident/ticket management?",
+        a: "For logging every case with clear status transitions, timestamps of actions taken, and linking related tickets or escalations so anyone picking up the case has full context. Good Jira hygiene — clear comments, accurate priority/labels — is what makes SLA reporting and handoffs between shifts actually work." },
+      { q: "How would you write a knowledge base article so the next engineer doesn't have to start from scratch?",
+        a: "Lead with the symptom exactly as a customer or engineer would describe it (so it's searchable), then the root cause, then numbered resolution steps, then any verification step to confirm it's actually fixed. I did this at Amazon — the goal is that someone with less context than you can follow it without needing to ask you directly." }
+    ]
+  },
+  {
+    cat: "Behavioral & Career Fit",
+    tag: "career",
+    items: [
+      { q: "Why are you moving from a pure support role toward DevOps?",
+        a: "Frame this around growth, not dissatisfaction: 5+ years of hands-on troubleshooting across EC2/S3/IAM/VPC and networking built a strong operational foundation, and now you're deliberately building the automation side (Jenkins, Terraform, CI/CD) to move from reactively fixing issues to proactively preventing them at scale — which is the natural next step, not a pivot away from what you've already mastered." },
+      { q: "What are you currently learning, and why those specific tools?",
+        a: "Jenkins, Terraform, AWS Lambda, Grafana, and Prometheus — each maps directly to gaps between support and DevOps: Jenkins/Terraform for automating what you currently do manually, Lambda for event-driven automation, and Grafana/Prometheus for the kind of proactive monitoring that prevents tickets rather than just resolving them." },
+      { q: "Describe a time you resolved something without escalating, that most people would have escalated.",
+        a: "Use a real example from the high-priority queue experience mentioned on your resume — being selected for a high-priority support queue and independently resolving escalation-worthy incidents is exactly this story. Focus on what specifically made it resolvable at your level: which logs you checked, what hypothesis you ruled out, and the fix you applied." },
+      { q: "How do you stay calm when a customer is frustrated or the issue is high pressure?",
+        a: "Acknowledge their frustration without getting defensive, give a concrete next update time even if you don't have the answer yet, and separate 'the person is upset' from 'the technical problem is unsolved' — solve the second one methodically and the first one usually resolves itself once they see progress." },
+      { q: "Where do you see yourself in two years?",
+        a: "Tie it to a believable trajectory: from Cloud Support Associate handling AWS operational issues, toward a Cloud/DevOps Engineer role owning infrastructure automation and CI/CD pipelines — supported by concrete evidence you're already building that (the VPC, S3 hosting, Docker, and Jenkins projects on your resume)." }
+    ]
+  }
+];
+
+const catlistEl = document.getElementById('catlist');
+const mainEl = document.getElementById('main');
+const searchInput = document.getElementById('searchInput');
+
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+
+function buildNav(){
+  catlistEl.innerHTML = DATA.map((sec,i) => `
+    <li><button data-target="sec-${i}" class="${i===0?'active':''}">
+      ${sec.cat} <span class="ct">${sec.items.length}</span>
+    </button></li>
+  `).join('');
+  catlistEl.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.getElementById(btn.dataset.target).scrollIntoView({behavior:'smooth', block:'start'});
+      catlistEl.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+function render(filter=''){
+  const f = filter.trim().toLowerCase();
+  let html = '';
+  let totalShown = 0;
+
+  DATA.forEach((sec, si) => {
+    const items = sec.items.filter(it =>
+      !f || it.q.toLowerCase().includes(f) || it.a.toLowerCase().includes(f) || sec.cat.toLowerCase().includes(f)
+    );
+    if(items.length === 0) return;
+    totalShown += items.length;
+
+    html += `<section class="section" id="sec-${si}">
+      <div class="section-head">
+        <span class="idx">0${si+1}</span>
+        <h2>${sec.cat}</h2>
+        <span class="count">${items.length} question${items.length>1?'s':''}</span>
+      </div>`;
+
+    items.forEach((it, qi) => {
+      const cardId = `card-${si}-${qi}`;
+      html += `
+        <div class="card" id="${cardId}">
+          <div class="qrow" onclick="toggleCard('${cardId}')">
+            <span class="prompt-tag">Q&gt;</span>
+            <span class="qtext">${it.q}</span>
+            <span class="chev">›</span>
+          </div>
+          <div class="answer">
+            <div class="answer-inner">
+              <span class="out">// answer</span>
+              ${it.a}
+              ${it.tip ? `<div class="tip"><b>Interview tip —</b> ${it.tip}</div>` : ''}
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</section>`;
+  });
+
+  if(totalShown === 0){
+    html = `<div class="empty">$ grep: no matches found for "${filter}"</div>`;
+  }
+  mainEl.innerHTML = html;
+}
+
+function toggleCard(id){
+  const card = document.getElementById(id);
+  const answer = card.querySelector('.answer');
+  const isOpen = card.classList.contains('open');
+  if(isOpen){
+    answer.style.maxHeight = null;
+    card.classList.remove('open');
+  } else {
+    card.classList.add('open');
+    answer.style.maxHeight = answer.scrollHeight + 'px';
+  }
+}
+
+searchInput.addEventListener('input', (e)=>{
+  render(e.target.value);
+});
+
+buildNav();
+render();
+</script>
+</body>
+</html>

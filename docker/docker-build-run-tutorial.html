@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Build & Run — Step by Step Tutorial</title>
+<style>
+  :root {
+    --blue: #2496ED;
+    --dark: #0b1b2b;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --code-bg: #1e1e2e;
+    --code-text: #d4d4d4;
+    --green: #2ecc71;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, var(--blue), #0d5faa);
+    color: white;
+    padding: 50px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 10px; font-size: 2.2rem; }
+  header p { margin: 0; opacity: 0.9; font-size: 1.1rem; }
+  main {
+    max-width: 780px;
+    margin: -30px auto 60px;
+    padding: 0 20px;
+  }
+  .step {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+    padding: 28px 30px;
+    position: relative;
+  }
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--blue);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .step-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--dark);
+  }
+  .step p { margin: 8px 0; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    margin: 12px 0;
+  }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  .comment { color: #6a9955; }
+  .inline-code {
+    background: #eef2f7;
+    color: #c7254e;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  .filename {
+    display: inline-block;
+    background: var(--blue);
+    color: white;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-family: monospace;
+  }
+  .note {
+    background: #fff8e1;
+    border-left: 4px solid #f5a623;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    margin-top: 12px;
+  }
+  .tip {
+    background: #eafaf1;
+    border-left: 4px solid var(--green);
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    margin-top: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e6ea;
+  }
+  th { color: var(--dark); }
+  td .inline-code { white-space: nowrap; }
+  footer {
+    text-align: center;
+    color: #888;
+    font-size: 0.85rem;
+    padding-bottom: 40px;
+  }
+  .section-divider {
+    margin: 40px 0 20px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #00758f, #003545);
+    color: white;
+    border-radius: 12px;
+  }
+  .section-divider h2 { margin: 0 0 6px; font-size: 1.4rem; }
+  .section-divider p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐳 Docker Build &amp; Run</h1>
+  <p>A focused, step-by-step tutorial on building images and running containers</p>
+</header>
+
+<main>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">1</span> Make sure you have a Dockerfile</h2>
+    <p>Every <span class="inline-code">docker build</span> needs a Dockerfile in your project folder. Minimal example:</p>
+    <div class="filename">Dockerfile</div>
+    <pre><code><span class="comment"># base image</span>
+FROM nginx:alpine
+
+<span class="comment"># copy files into the container</span>
+COPY . /usr/share/nginx/html
+
+<span class="comment"># document the port the app uses</span>
+EXPOSE 80</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">2</span> Build the image</h2>
+    <p>From the folder containing the Dockerfile:</p>
+    <pre><code>docker build -t myapp:latest .</code></pre>
+    <table>
+      <tr><th>Part</th><th>Meaning</th></tr>
+      <tr><td><span class="inline-code">-t myapp:latest</span></td><td>tag (name:version) for the image</td></tr>
+      <tr><td><span class="inline-code">.</span></td><td>build context — folder Docker reads the Dockerfile from</td></tr>
+    </table>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">3</span> Build variations</h2>
+    <pre><code><span class="comment"># custom Dockerfile name/path</span>
+docker build -t myapp:latest -f Dockerfile.prod .
+
+<span class="comment"># rebuild ignoring the layer cache</span>
+docker build --no-cache -t myapp:latest .
+
+<span class="comment"># pass a build-time variable</span>
+docker build --build-arg ENV=production -t myapp:latest .
+
+<span class="comment"># build for a specific platform (e.g. on Apple Silicon targeting amd64)</span>
+docker build --platform linux/amd64 -t myapp:latest .</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">4</span> Verify the image was built</h2>
+    <pre><code>docker images</code></pre>
+    <p>You should see <span class="inline-code">myapp</span> listed with the <span class="inline-code">latest</span> tag, its size, and creation time.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">5</span> Run the container</h2>
+    <pre><code>docker run -d --name myapp-container -p 8080:80 myapp:latest</code></pre>
+    <table>
+      <tr><th>Flag</th><th>Meaning</th></tr>
+      <tr><td><span class="inline-code">-d</span></td><td>detached — runs in the background</td></tr>
+      <tr><td><span class="inline-code">--name</span></td><td>gives the container a friendly name</td></tr>
+      <tr><td><span class="inline-code">-p 8080:80</span></td><td>maps host port 8080 → container port 80</td></tr>
+    </table>
+    <p>Visit <span class="inline-code">http://localhost:8080</span> to see it live.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">6</span> Run variations</h2>
+    <pre><code><span class="comment"># interactive shell instead of your app's default command</span>
+docker run -it myapp:latest sh
+
+<span class="comment"># pass environment variables</span>
+docker run -d -e NODE_ENV=production myapp:latest
+
+<span class="comment"># mount a local folder into the container</span>
+docker run -d -v $(pwd):/usr/share/nginx/html myapp:latest
+
+<span class="comment"># auto-remove the container once it stops</span>
+docker run --rm myapp:latest
+
+<span class="comment"># restart automatically unless manually stopped</span>
+docker run -d --restart unless-stopped myapp:latest</code></pre>
+    <div class="tip">✅ Use <span class="inline-code">--rm</span> for quick tests you don't need to keep around.</div>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">7</span> Check it's running</h2>
+    <pre><code>docker ps</code></pre>
+    <p>Lists running containers, their ports, and status. Add <span class="inline-code">-a</span> to see stopped ones too.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">8</span> View logs and debug</h2>
+    <pre><code>docker logs myapp-container       <span class="comment"># view output</span>
+docker logs -f myapp-container    <span class="comment"># follow live</span>
+docker exec -it myapp-container sh   <span class="comment"># open a shell inside</span></code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">9</span> Stop and remove the container</h2>
+    <pre><code>docker stop myapp-container
+docker rm myapp-container</code></pre>
+    <div class="note">💡 Combine both in one go: <span class="inline-code">docker rm -f myapp-container</span></div>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">10</span> Clean up images</h2>
+    <pre><code>docker rmi myapp:latest        <span class="comment"># remove one image</span>
+docker image prune             <span class="comment"># remove dangling/unused images</span>
+docker system prune -a         <span class="comment"># remove everything unused (careful!)</span></code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">11</span> Full cycle, one block</h2>
+    <pre><code>docker build -t myapp:latest .
+docker run -d --name myapp-container -p 8080:80 myapp:latest
+docker ps
+docker logs -f myapp-container
+<span class="comment"># Ctrl+C to stop following logs</span>
+docker stop myapp-container
+docker rm myapp-container</code></pre>
+  </div>
+
+  <div class="section-divider">
+    <h2>🐬 Bonus: Running MySQL in Docker</h2>
+    <p>MySQL is available as an official image, so you don't need a Dockerfile to run it — just <span class="inline-code">docker run</span> with the right options.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">12</span> Pull the MySQL image</h2>
+    <pre><code>docker pull mysql:8.0</code></pre>
+    <p>Using a fixed version tag (like <span class="inline-code">8.0</span>) instead of <span class="inline-code">latest</span> avoids surprise upgrades.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">13</span> Run a MySQL container</h2>
+    <pre><code>docker run -d \
+  --name mysql-db \
+  -e MYSQL_ROOT_PASSWORD=rootpass \
+  -e MYSQL_DATABASE=mydb \
+  -e MYSQL_USER=appuser \
+  -e MYSQL_PASSWORD=apppass \
+  -p 3306:3306 \
+  -v mysql-data:/var/lib/mysql \
+  mysql:8.0</code></pre>
+    <table>
+      <tr><th>Flag</th><th>Meaning</th></tr>
+      <tr><td><span class="inline-code">MYSQL_ROOT_PASSWORD</span></td><td>required — sets the root password</td></tr>
+      <tr><td><span class="inline-code">MYSQL_DATABASE</span></td><td>creates a database automatically on first start</td></tr>
+      <tr><td><span class="inline-code">MYSQL_USER</span> / <span class="inline-code">MYSQL_PASSWORD</span></td><td>creates a non-root user with access to that database</td></tr>
+      <tr><td><span class="inline-code">-p 3306:3306</span></td><td>exposes MySQL's default port to the host</td></tr>
+      <tr><td><span class="inline-code">-v mysql-data:/var/lib/mysql</span></td><td>named volume so data survives container removal</td></tr>
+    </table>
+    <div class="tip">✅ The named volume is important — without it, all your data disappears when the container is removed.</div>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">14</span> Check it's healthy</h2>
+    <pre><code>docker ps
+docker logs -f mysql-db</code></pre>
+    <p>Wait for a line like <span class="inline-code">ready for connections</span> in the logs before connecting.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">15</span> Connect to MySQL</h2>
+    <pre><code><span class="comment"># from inside the container, using the mysql client bundled in the image</span>
+docker exec -it mysql-db mysql -u root -p
+
+<span class="comment"># or connect as the app user</span>
+docker exec -it mysql-db mysql -u appuser -p mydb
+
+<span class="comment"># from your host machine (needs a local mysql client installed)</span>
+mysql -h 127.0.0.1 -P 3306 -u appuser -p mydb</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">16</span> Backup and restore data</h2>
+    <pre><code><span class="comment"># dump database to a file on the host</span>
+docker exec mysql-db sh -c 'exec mysqldump -u root -p"rootpass" mydb' &gt; backup.sql
+
+<span class="comment"># restore from a dump file</span>
+docker exec -i mysql-db sh -c 'exec mysql -u root -p"rootpass" mydb' &lt; backup.sql</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">17</span> Stop, remove, and clean up</h2>
+    <pre><code>docker stop mysql-db
+docker rm mysql-db
+
+<span class="comment"># data is safe in the volume — remove it only if you really want to wipe the database</span>
+docker volume rm mysql-data</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">18</span> MySQL with Docker Compose</h2>
+    <p>Easier to manage than a long <span class="inline-code">docker run</span> command, especially alongside an app service:</p>
+    <div class="filename">docker-compose.yml</div>
+    <pre><code>services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:</code></pre>
+    <pre><code>docker compose up -d
+docker compose logs -f db
+docker compose down        <span class="comment"># stops and removes container, keeps the volume</span></code></pre>
+  </div>
+
+  <div class="section-divider">
+    <h2>🌐 Docker Networking</h2>
+    <p>Create custom networks so containers can talk to each other by name.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">19</span> Create a network</h2>
+    <pre><code>docker network create mynet</code></pre>
+    <pre><code><span class="comment"># with a specific driver (bridge is default, most common for a single host)</span>
+docker network create --driver bridge mynet
+
+<span class="comment"># with a custom subnet</span>
+docker network create --subnet=172.20.0.0/16 mynet</code></pre>
+    <div class="tip">✅ Containers on the same custom network can reach each other using their container name as a hostname — no need to expose ports to the host for that.</div>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">20</span> List and inspect networks</h2>
+    <pre><code>docker network ls</code></pre>
+    <p>Shows all networks (bridge, host, none, plus any custom ones).</p>
+    <pre><code>docker network inspect mynet</code></pre>
+    <p>Shows subnet, gateway, and which containers are currently attached, with their IPs.</p>
+    <pre><code><span class="comment"># quick one-liner to see just a container's network settings</span>
+docker inspect -f '{{json .NetworkSettings.Networks}}' myapp-container</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">21</span> Attach containers to a network</h2>
+    <pre><code><span class="comment"># run a new container directly on the network</span>
+docker run -d --name myapp-container --network mynet -p 8080:80 myapp:latest
+docker run -d --name mysql-db --network mynet -e MYSQL_ROOT_PASSWORD=rootpass mysql:8.0
+
+<span class="comment"># connect an already-running container to a network</span>
+docker network connect mynet myapp-container
+
+<span class="comment"># disconnect a container from a network</span>
+docker network disconnect mynet myapp-container</code></pre>
+    <p>With both containers on <span class="inline-code">mynet</span>, your app can connect to MySQL using the hostname <span class="inline-code">mysql-db</span> instead of an IP address.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">22</span> Remove a network</h2>
+    <pre><code>docker network rm mynet</code></pre>
+    <div class="note">💡 A network can only be removed once no containers are attached to it. Stop/remove or disconnect them first.</div>
+  </div>
+
+  <div class="section-divider">
+    <h2>🧹 Cleanup Commands — By Type</h2>
+    <p>Separate cleanup for containers, images, and networks so you control exactly what gets removed.</p>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">23</span> Clean up containers</h2>
+    <pre><code><span class="comment"># remove one specific stopped container</span>
+docker rm myapp-container
+
+<span class="comment"># force remove even if it's running</span>
+docker rm -f myapp-container
+
+<span class="comment"># remove ALL stopped containers</span>
+docker container prune
+
+<span class="comment"># remove all stopped containers without confirmation prompt</span>
+docker container prune -f
+
+<span class="comment"># remove every container, running or not (careful!)</span>
+docker rm -f $(docker ps -aq)</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">24</span> Clean up images</h2>
+    <pre><code><span class="comment"># remove one specific image</span>
+docker rmi myapp:latest
+
+<span class="comment"># force remove (e.g. if used by a stopped container)</span>
+docker rmi -f myapp:latest
+
+<span class="comment"># remove dangling images only (untagged leftovers from builds)</span>
+docker image prune
+
+<span class="comment"># remove ALL unused images, not just dangling ones (careful!)</span>
+docker image prune -a
+
+<span class="comment"># remove every image on the system</span>
+docker rmi -f $(docker images -aq)</code></pre>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">25</span> Clean up networks</h2>
+    <pre><code><span class="comment"># remove one specific custom network</span>
+docker network rm mynet
+
+<span class="comment"># remove all unused (no containers attached) custom networks</span>
+docker network prune
+
+<span class="comment"># without confirmation prompt</span>
+docker network prune -f</code></pre>
+    <div class="note">💡 Docker won't let you remove the built-in <span class="inline-code">bridge</span>, <span class="inline-code">host</span>, or <span class="inline-code">none</span> networks — that's expected.</div>
+  </div>
+
+  <div class="step">
+    <h2 class="step-title"><span class="step-number">26</span> Everything at once (nuclear option)</h2>
+    <pre><code><span class="comment"># check what's using space first</span>
+docker system df
+
+<span class="comment"># remove stopped containers, dangling images, unused networks, build cache</span>
+docker system prune
+
+<span class="comment"># also remove unused images AND volumes — irreversible data loss risk</span>
+docker system prune -a --volumes</code></pre>
+    <div class="note">⚠️ <span class="inline-code">--volumes</span> deletes named volumes too — including your MySQL data if it's not attached to a running container. Use with caution.</div>
+  </div>
+
+</main>
+
+<footer>
+  Built with 🐳 Docker
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EC2 — Mastery Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14; --panel:#111823; --panel-2:#0D131C; --line:#1E2A3B;
+    --text:#E7ECF3; --muted:#93A2B8; --dim:#5C6E85;
+    --amber:#FF9E2C; --amber-dim:#7A4E15; --teal:#33D6C0; --teal-dim:#0E5A50;
+    --red:#F0555F; --green:#5FD97D; --blue:#4E9EF0; --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 90% -8%, rgba(51,214,192,0.07), transparent 60%),
+      radial-gradient(1000px 500px at -10% 15%, rgba(255,158,44,0.06), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Inter', sans-serif; line-height:1.65; display:flex; min-height:100vh;
+  }
+  code,.mono{ font-family:'JetBrains Mono', monospace; }
+  ::selection{ background:var(--amber-dim); color:#fff; }
+
+  nav.sidebar{
+    width:250px; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto;
+    padding:26px 18px; background:var(--panel-2); border-right:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .brand .dot{ width:10px; height:10px; border-radius:3px; background:var(--amber); box-shadow:0 0 12px rgba(255,158,44,0.6); }
+  .brand span{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
+  .brand-sub{ font-size:10.5px; color:var(--dim); margin:0 0 22px 20px; text-transform:uppercase; letter-spacing:0.08em; }
+  .navlist{ list-style:none; }
+  .navlist li{ margin-bottom:1px; }
+  .navlist a{ display:block; color:var(--muted); text-decoration:none; font-size:12.5px; padding:5px 9px; border-radius:5px; border-left:2px solid transparent; transition:.15s; }
+  .navlist a:hover{ color:var(--text); background:rgba(255,255,255,.03); border-left-color:var(--teal); }
+
+  main{ flex:1; min-width:0; }
+  .wrap{ max-width:960px; margin:0 auto; padding:60px 46px 120px; }
+  section{ scroll-margin-top:20px; margin-bottom:78px; }
+
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .eyebrow::before{ content:""; width:16px; height:1px; background:var(--teal); }
+  h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; line-height:1.1; letter-spacing:-0.01em; margin-bottom:16px; }
+  h2{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; margin-bottom:14px; }
+  h3{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16.5px; margin:22px 0 8px; }
+  h4{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--amber); margin:16px 0 6px; }
+  p{ color:var(--muted); font-size:14.5px; margin-bottom:12px; max-width:74ch; }
+  p strong,li strong{ color:var(--text); font-weight:600; }
+  .lede{ font-size:16.5px; max-width:64ch; }
+
+  .tag{ font-family:'JetBrains Mono',monospace; font-size:11px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); color:var(--muted); background:var(--panel); }
+  .hero-tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:14px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:800px){ .grid2,.grid3{ grid-template-columns:1fr; } nav.sidebar{ display:none; } .wrap{ padding:36px 20px 90px; } h1{ font-size:30px; } }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:12px 0 22px; }
+  th{ text-align:left; color:var(--dim); font-weight:600; font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:9px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:10px; border-bottom:1px solid var(--line); color:var(--muted); vertical-align:top; }
+  td strong{ color:var(--text); }
+  tr:last-child td{ border-bottom:none; }
+  td code{ color:var(--teal); background:rgba(51,214,192,.08); padding:2px 5px; border-radius:4px; font-size:12px; }
+
+  .codeblock{ background:#080C12; border:1px solid var(--line); border-radius:8px; padding:14px 16px; overflow-x:auto; margin:10px 0 18px; position:relative; }
+  .codeblock .fname{ position:absolute; top:9px; right:13px; font-size:10px; color:var(--dim); font-family:'JetBrains Mono',monospace; }
+  .codeblock pre{ font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.65; color:#C9D6E8; white-space:pre-wrap; word-break:break-word; }
+  .codeblock .k{ color:var(--amber); } .codeblock .s{ color:var(--teal); } .codeblock .c{ color:var(--dim); } .codeblock .rd{ color:var(--red); }
+
+  .callout{ border-radius:var(--radius); padding:14px 18px; margin:14px 0; border:1px solid; font-size:13.5px; }
+  .callout p{ margin-bottom:0; font-size:13.5px; }
+  .callout .lbl{ font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; display:block; font-weight:700; }
+  .callout.good{ background:rgba(95,217,125,.06); border-color:rgba(95,217,125,.3); } .callout.good .lbl{ color:var(--green); }
+  .callout.bad{ background:rgba(240,85,95,.06); border-color:rgba(240,85,95,.3); } .callout.bad .lbl{ color:var(--red); }
+  .callout.warn{ background:rgba(255,158,44,.06); border-color:rgba(255,158,44,.3); } .callout.warn .lbl{ color:var(--amber); }
+  .callout.info{ background:rgba(51,214,192,.06); border-color:rgba(51,214,192,.3); } .callout.info .lbl{ color:var(--teal); }
+
+  ul.checklist{ list-style:none; margin:12px 0 20px; columns:2; column-gap:26px; }
+  ul.checklist li{ font-size:13.5px; color:var(--muted); padding:6px 0 6px 24px; position:relative; break-inside:avoid; }
+  ul.checklist li::before{ content:"☐"; position:absolute; left:0; top:6px; color:var(--teal); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  @media (max-width:700px){ ul.checklist{ columns:1; } }
+
+  ul.plain{ margin:8px 0 16px 0; padding-left:20px; } ul.plain li{ color:var(--muted); font-size:13.5px; margin-bottom:6px; }
+  ul.plain li strong{ color:var(--text); }
+
+  .ascii{ background:#080C12; border:1px solid var(--line); border-radius:8px; padding:16px 20px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--teal); white-space:pre; overflow-x:auto; margin:14px 0 18px; line-height:1.5; }
+
+  .qa{ border:1px solid var(--line); border-radius:8px; margin-bottom:8px; background:var(--panel); overflow:hidden; }
+  .qa summary{ list-style:none; cursor:pointer; padding:13px 18px; display:flex; align-items:center; gap:12px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; }
+  .qa summary::-webkit-details-marker{ display:none; }
+  .qa summary .qnum{ font-family:'JetBrains Mono',monospace; color:var(--amber); font-size:11.5px; flex-shrink:0; width:30px; }
+  .qa summary .chev{ margin-left:auto; color:var(--dim); transition:transform .2s; font-size:11px; }
+  .qa[open] summary .chev{ transform:rotate(90deg); color:var(--teal); }
+  .qa .a{ padding:0 18px 16px 60px; font-size:13.3px; color:var(--muted); }
+  .qa .a p{ font-size:13.3px; margin-bottom:8px; }
+  .qa .a .meta{ font-size:11.5px; color:var(--dim); margin-bottom:6px; }
+  .qa .a .meta b{ color:var(--teal); }
+
+  .lab{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; }
+  .lab .lvl{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--amber); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  .lab h3{ margin-top:0; }
+
+  .incident{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:14px; }
+  .flow{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); line-height:2; }
+  .flow b{ color:var(--text); }
+  .flow .arrow{ color:var(--dim); }
+
+  .rf-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin:14px 0 20px; }
+  .rf-item{ font-size:13px; padding:10px 0; border-bottom:1px dashed var(--line); }
+  .rf-item .q{ color:var(--text); font-weight:600; }
+  .rf-item .a{ color:var(--muted); margin-top:3px; }
+  @media (max-width:700px){ .rf-grid{ grid-template-columns:1fr; } }
+
+  .daybox{ display:flex; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .daybox:last-child{ border-bottom:none; }
+  .daybox .d{ font-family:'JetBrains Mono',monospace; color:var(--amber); font-size:12.5px; width:70px; flex-shrink:0; padding-top:2px; }
+  .daybox .c p{ margin-bottom:4px; font-size:13.5px; }
+
+  .pillbar{ display:flex; gap:10px; margin:18px 0; flex-wrap:wrap; }
+  .pill{ font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 12px; border-radius:100px; background:var(--panel); border:1px solid var(--line); color:var(--muted); }
+  .pill.on{ border-color:var(--teal); color:var(--teal); }
+
+  footer{ border-top:1px solid var(--line); padding:30px 46px; max-width:960px; margin:0 auto; color:var(--dim); font-size:12px; font-family:'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="brand"><div class="dot"></div><span>AWS EC2</span></div>
+  <div class="brand-sub">Mastery Guide</div>
+  <ul class="navlist">
+    <li><a href="#s1">1. What is EC2</a></li>
+    <li><a href="#s2">2. Core concepts</a></li>
+    <li><a href="#s3">3. Architecture</a></li>
+    <li><a href="#s4">4. Key terms</a></li>
+    <li><a href="#s5">5. Console walkthrough</a></li>
+    <li><a href="#s6">6. CLI commands</a></li>
+    <li><a href="#s7">7. Linux commands</a></li>
+    <li><a href="#s8">8. Use cases</a></li>
+    <li><a href="#s9">9. Hands-on labs</a></li>
+    <li><a href="#s10">10. Production setup</a></li>
+    <li><a href="#s11">11. Security</a></li>
+    <li><a href="#s12">12. Networking</a></li>
+    <li><a href="#s13">13. Monitoring</a></li>
+    <li><a href="#s14">14. Troubleshooting</a></li>
+    <li><a href="#s15">15. Common errors</a></li>
+    <li><a href="#s16">16. Incident scenarios</a></li>
+    <li><a href="#s17">17. Cost optimization</a></li>
+    <li><a href="#s18">18. Automation</a></li>
+    <li><a href="#s19">19. CI/CD integration</a></li>
+    <li><a href="#s20">20. HA & DR</a></li>
+    <li><a href="#s21">21. Knowledge check</a></li>
+    <li><a href="#s22">22. Interview questions</a></li>
+    <li><a href="#s23">23. Rapid fire</a></li>
+    <li><a href="#s24">24. X vs Y</a></li>
+    <li><a href="#s25">25. Production checklist</a></li>
+    <li><a href="#s26">26. Cheat sheet</a></li>
+    <li><a href="#s27">27. Interview cheat sheet</a></li>
+    <li><a href="#s28">28. Learning path</a></li>
+  </ul>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <!-- HERO -->
+  <section id="top">
+    <div class="eyebrow">AWS · Elastic Compute Cloud</div>
+    <h1>EC2, from first instance<br>to production incident.</h1>
+    <p class="lede">EC2 is the primitive nearly everything else in AWS compute builds on. This guide takes you from "what is a virtual machine in the cloud" through the console, the CLI, real production architecture, security, troubleshooting, automation, and a full interview-prep pack — in one document.</p>
+    <div class="hero-tags">
+      <span class="tag">Beginner → Production</span>
+      <span class="tag">CLI + Linux + IaC</span>
+      <span class="tag">Troubleshooting playbook</span>
+      <span class="tag">120+ interview items</span>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section id="s1">
+    <div class="eyebrow">01</div>
+    <h2>What is EC2?</h2>
+    <p><strong>Amazon EC2 (Elastic Compute Cloud)</strong> is AWS's core Infrastructure-as-a-Service offering: on-demand, resizable virtual servers ("instances") that run in AWS data centers instead of your own hardware. You pick an operating system image, a hardware profile (CPU/RAM/network), storage, and networking, and AWS boots a virtual machine for you in seconds.</p>
+    <p><strong>Why AWS created it:</strong> before EC2 (launched 2006), running a server meant buying physical hardware, waiting weeks for procurement, and over-provisioning for peak load you'd rarely hit. EC2 solved this by letting compute be requested and released like any other metered utility.</p>
+    <p><strong>Problem it solves:</strong> capacity planning, hardware procurement lead time, idle-hardware waste, and the inability to scale down. EC2 turns capital expenditure (buying servers) into operational expenditure (renting compute by the hour/second).</p>
+    <p><strong>Where it fits in AWS architecture:</strong> EC2 is the general-purpose compute layer. Higher-level compute services (Lambda, ECS, EKS, Elastic Beanstalk) are either built on top of EC2 under the hood or exist as an alternative to it for narrower use cases.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 style="margin-top:0;">Beginner explanation</h4>
+        <p style="font-size:13.5px;">It's a computer that lives in Amazon's data center that you rent by the hour. You get to choose how powerful it is, what operating system it runs, and you can turn it on, off, or delete it whenever you want.</p>
+      </div>
+      <div class="card">
+        <h4 style="margin-top:0;">Technical explanation</h4>
+        <p style="font-size:13.5px;">A Xen/Nitro-hypervisor-backed virtual machine instance, launched from an AMI, scheduled onto a physical host within an Availability Zone, attached to EBS/instance-store volumes and an ENI inside a VPC subnet, governed by IAM (via instance profile), security groups, and billed per-second based on instance type.</p>
+      </div>
+    </div>
+
+    <h3>Real-world analogy</h3>
+    <p>EC2 is like renting a fully furnished apartment instead of building a house. You don't own the building (physical hardware), you choose a floor plan (instance type), you can move out or upsize any time (resize/terminate), and the landlord (AWS) handles the plumbing and electricity (power, cooling, physical security, hypervisor).</p>
+
+    <h3>When NOT to use it</h3>
+    <ul class="plain">
+      <li><strong>Short, event-driven, bursty workloads</strong> — Lambda avoids paying for idle servers and removes patching entirely.</li>
+      <li><strong>You don't want to manage an OS at all</strong> — Fargate (ECS/EKS) or Lambda remove the instance layer.</li>
+      <li><strong>Pure static content hosting</strong> — S3 + CloudFront is cheaper and has no servers to patch or scale.</li>
+      <li><strong>Fully managed database needs</strong> — RDS/Aurora/DynamoDB instead of self-managing a DB on EC2.</li>
+    </ul>
+
+    <h3>Three real-world examples</h3>
+    <table>
+      <tr><th>Example</th><th>Why EC2</th></tr>
+      <tr><td class="strong">Netflix encoding fleet</td><td>Large, variable-size fleets of compute-optimized instances for video transcoding, scaled with Auto Scaling based on queue depth.</td></tr>
+      <tr><td class="strong">A fintech's core transaction API</td><td>Needs full OS-level control, specific compliance-approved AMIs, and predictable performance — run behind an ALB across multiple AZs.</td></tr>
+      <tr><td class="strong">A startup's self-hosted Jenkins/GitLab</td><td>Needs persistent, stateful compute with root access and custom tooling that doesn't fit a managed/serverless model.</td></tr>
+    </table>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <div class="eyebrow">02</div>
+    <h2>Core concepts</h2>
+
+    <h3>1. AMI (Amazon Machine Image)</h3>
+    <p><strong>Simple:</strong> a template/snapshot used to launch an instance — OS plus any pre-installed software. <strong>Technical:</strong> a combination of a root volume snapshot, launch permissions, and a block device mapping registered in a region. <strong>Why it exists:</strong> to make launches reproducible and fast instead of installing an OS from scratch every time. <strong>Use case:</strong> baking a "golden AMI" with your hardened OS, agents, and app runtime pre-installed so Auto Scaling can launch identical instances in seconds. <strong>Common mistake:</strong> forgetting AMIs are region-specific and not copying them to every region you deploy in. <strong>Interview Q:</strong> "How would you keep AMIs consistent and patched across 50 instances?" → golden AMI pipeline with EC2 Image Builder, rebuilt on a schedule.</p>
+
+    <h3>2. Instance type & family</h3>
+    <p><strong>Simple:</strong> the "size" of virtual hardware — CPU, RAM, network, sometimes GPU. <strong>Technical:</strong> a fixed combination of vCPU count, memory, network performance tier, and sometimes local NVMe storage, named by family+generation+size (e.g. <code>m6i.large</code>). <strong>Why it exists:</strong> different workloads need different CPU:RAM:network ratios — a single "one size" instance would be wasteful for most use cases. <strong>Use case:</strong> <code>c-family</code> (compute-optimized) for CPU-bound batch jobs, <code>r-family</code> (memory-optimized) for in-memory caches/databases, <code>m-family</code> (general purpose) for typical web apps. <strong>Common mistake:</strong> defaulting to <code>t2/t3</code> burstable instances for sustained high-CPU workloads and getting CPU-credit throttled. <strong>Interview Q:</strong> "Why did your app slow down after running fine for an hour?" → CPU credit exhaustion on a burstable instance type.</p>
+
+    <h3>3. EBS (Elastic Block Store)</h3>
+    <p><strong>Simple:</strong> a virtual hard drive that attaches to your instance and persists independently of it. <strong>Technical:</strong> network-attached, AZ-locked block storage replicated within the AZ, available in gp3/gp2 (SSD general purpose), io1/io2 (provisioned IOPS SSD), st1/sc1 (HDD) types. <strong>Why it exists:</strong> instance store (local disk) is ephemeral — data is lost on stop/terminate/hardware failure; EBS decouples storage lifecycle from instance lifecycle. <strong>Use case:</strong> the root volume of nearly every production instance, plus separate data volumes for databases. <strong>Common mistake:</strong> assuming EBS survives across AZs — it doesn't; you must snapshot and restore into another AZ. <strong>Interview Q:</strong> "EBS vs instance store — when would you actually choose instance store?" → when you need very high local IOPS and the data is fully disposable/replicated elsewhere (e.g. Kafka log segments, cache nodes).</p>
+
+    <h3>4. Security Groups</h3>
+    <p><strong>Simple:</strong> a virtual firewall attached to the instance's network interface. <strong>Technical:</strong> stateful, allow-only rule sets evaluated at the ENI level — return traffic for an allowed request is automatically permitted regardless of outbound rules. <strong>Why it exists:</strong> to control exactly which traffic reaches an instance without needing OS-level firewall configuration for basic segmentation. <strong>Use case:</strong> allowing inbound 443 only from an ALB's security group, not from 0.0.0.0/0. <strong>Common mistake:</strong> opening SSH (22) to 0.0.0.0/0 "temporarily" and forgetting to close it. <strong>Interview Q:</strong> "Security Group vs NACL?" → SG is stateful and instance-level (allow-only); NACL is stateless and subnet-level (allow + deny).</p>
+
+    <h3>5. Key Pairs</h3>
+    <p><strong>Simple:</strong> the SSH key used to log into a Linux instance (or decrypt the Windows admin password). <strong>Technical:</strong> asymmetric key pair; AWS stores only the public key, injected into <code>~/.ssh/authorized_keys</code> at first boot via cloud-init. <strong>Why it exists:</strong> password-based SSH is weak by default; key-based auth is the AWS-native secure bootstrap mechanism. <strong>Use case:</strong> initial access to a freshly launched instance before configuration management takes over. <strong>Common mistake:</strong> losing the private key with no recovery path except detaching the root volume and mounting it on another instance. <strong>Interview Q:</strong> "You lost the .pem file for a running instance — now what?" → stop instance, detach root EBS volume, attach to a rescue instance, edit authorized_keys, reattach, restart.</p>
+
+    <h3>6. Elastic IP</h3>
+    <p><strong>Simple:</strong> a static public IP address you own that can be moved between instances. <strong>Technical:</strong> a public IPv4 address allocated to your account, associated to an ENI; unassociated EIPs incur an hourly charge specifically to discourage hoarding. <strong>Why it exists:</strong> a regular public IP changes every time you stop/start an instance — EIP gives DNS-stable addressing. <strong>Use case:</strong> a NAT instance, or a legacy app that's hardcoded to an IP rather than a DNS name. <strong>Common mistake:</strong> relying on EIPs instead of a load balancer + DNS for scalable production traffic. <strong>Interview Q:</strong> "Why would AWS charge you for an EIP that's not attached to anything?" → to discourage IPv4 address hoarding, since IPv4 space is scarce.</p>
+
+    <h3>7. Instance metadata & IAM instance profile</h3>
+    <p><strong>Simple:</strong> a local, in-instance endpoint that gives the OS information about itself, including temporary AWS credentials. <strong>Technical:</strong> IMDS (<code>169.254.169.254</code>), now defaulting to IMDSv2 (session-oriented, token-required) to prevent SSRF-based credential theft; the instance profile wraps an IAM role whose STS credentials are exposed there. <strong>Why it exists:</strong> so applications never need hardcoded AWS keys. <strong>Use case:</strong> an app on the instance calling S3 using the SDK's default credential chain, which automatically finds IMDS-issued credentials. <strong>Common mistake:</strong> leaving IMDSv1 enabled, which is vulnerable to SSRF attacks that steal the role's credentials (as in the 2019 Capital One breach). <strong>Interview Q:</strong> "How do you prevent SSRF from stealing an instance's IAM credentials?" → enforce IMDSv2 (<code>--http-tokens required</code>), which requires a session token obtainable only via a PUT request that most naive SSRF proxies can't replicate.</p>
+
+    <h3>8. Placement groups & Auto Scaling</h3>
+    <p><strong>Simple:</strong> placement groups control physical proximity of instances; Auto Scaling automatically adds/removes instances based on demand. <strong>Technical:</strong> placement strategies are <em>cluster</em> (low-latency, same rack), <em>spread</em> (max 7 per rack, isolate failure), and <em>partition</em> (grouped racks, for distributed systems like Cassandra/HDFS); Auto Scaling Groups (ASGs) maintain a desired count using launch templates and scaling policies against CloudWatch metrics. <strong>Why they exist:</strong> to optimize either for network latency (cluster) or fault isolation (spread/partition), and to remove manual capacity management entirely. <strong>Use case:</strong> an ASG behind an ALB scaling out on high CPU/request count, scaling in overnight to save cost. <strong>Common mistake:</strong> setting scaling thresholds too aggressively, causing "flapping" (rapid scale out/in cycles). <strong>Interview Q:</strong> "Your ASG keeps launching and terminating instances every few minutes — why?" → scaling policy thresholds too tight/no cooldown, causing oscillation around the threshold.</p>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <div class="eyebrow">03</div>
+    <h2>Architecture</h2>
+    <p>EC2 instances live inside a <strong>Region → Availability Zone → VPC → Subnet</strong> hierarchy. A launch request flows through the control plane, gets scheduled onto a physical host by the placement engine, and boots via the Nitro hypervisor with attached ENI(s) and EBS volume(s).</p>
+
+    <div class="ascii">Request (Console/CLI/SDK)
+  │
+  ▼
+[EC2 Control Plane]  ── validates IAM permissions, quotas, AMI access
+  │
+  ▼
+[Placement Engine]   ── picks a physical host in the target AZ
+  │
+  ▼
+[Nitro Hypervisor]   ── boots the VM, attaches ENI + EBS
+  │
+  ├──▶ [ENI] ──▶ Subnet ──▶ Route Table ──▶ IGW/NAT ──▶ Internet
+  │
+  └──▶ [EBS Volume(s)] ──▶ EBS storage fleet (replicated within AZ)
+
+Instance boots → cloud-init runs → SSH key injected → user-data script executes → instance reachable</div>
+
+    <h3>Step-by-step</h3>
+    <ul class="plain">
+      <li><strong>Control plane validation:</strong> IAM checks you're allowed to run this instance type/AMI; service quotas checked (e.g. vCPU limit per region).</li>
+      <li><strong>Placement:</strong> AWS's internal scheduler picks a physical host with capacity in your chosen AZ, honoring any placement group strategy.</li>
+      <li><strong>Boot:</strong> the Nitro hypervisor allocates the VM, attaches the root EBS volume (or instance store) and a primary ENI inside your chosen subnet.</li>
+      <li><strong>Bootstrap:</strong> cloud-init runs on first boot — injects your SSH public key, sets hostname, and executes any <strong>user-data</strong> script you supplied (common for installing an agent or pulling app code).</li>
+      <li><strong>Network path:</strong> traffic in/out is governed by the subnet's route table, the instance's security group, and the subnet's NACL, before ever reaching an Internet Gateway or NAT Gateway.</li>
+    </ul>
+
+    <h3>Availability, scaling, fault tolerance</h3>
+    <p>A single EC2 instance is <strong>not</strong> highly available by itself — it lives on one physical host in one AZ. High availability comes from architecture on top of EC2: multiple instances across multiple AZs, fronted by a load balancer, managed by an Auto Scaling Group that replaces unhealthy instances automatically. AWS's own resilience commitment is at the AZ/region level (physical redundancy, power, networking) — instance-level resilience is your responsibility.</p>
+
+    <h3>Security boundaries</h3>
+    <p>Layered from outside in: <strong>NACL</strong> (subnet, stateless) → <strong>Security Group</strong> (instance ENI, stateful) → <strong>OS firewall</strong> (iptables/nftables/Windows Firewall, if configured) → <strong>IAM</strong> (what the instance's role can do to other AWS services) → <strong>IMDSv2</strong> (what can read the instance's own credentials).</p>
+
+    <h3>What an interviewer expects you to know</h3>
+    <p style="font-size:13.5px;">That a single instance is a single point of failure by default, that AZs are physically isolated, that the shared responsibility model puts host/hypervisor security on AWS but OS/patching/app security on you, and that scaling is something you architect (ASG+ALB), not something EC2 gives you for free.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <div class="eyebrow">04</div>
+    <h2>Important AWS terms</h2>
+    <table>
+      <tr><th>Term</th><th>Meaning</th><th>Why important</th><th>Example</th></tr>
+      <tr><td class="strong">AMI</td><td>Bootable image template</td><td>Defines what an instance launches as</td><td><code>ami-0abcd1234</code></td></tr>
+      <tr><td class="strong">ENI</td><td>Elastic Network Interface</td><td>Virtual NIC — can be detached/reattached</td><td>Multi-homed instances</td></tr>
+      <tr><td class="strong">EBS</td><td>Persistent network block storage</td><td>Survives instance stop/terminate (if not set to delete)</td><td><code>gp3</code> root volume</td></tr>
+      <tr><td class="strong">Instance Store</td><td>Ephemeral local disk</td><td>Fast but lost on stop/terminate</td><td><code>i3.large</code> NVMe</td></tr>
+      <tr><td class="strong">Launch Template</td><td>Reusable instance config</td><td>Backbone of ASGs and repeatable launches</td><td>Replaces legacy Launch Configurations</td></tr>
+      <tr><td class="strong">User Data</td><td>Bootstrap script run on first boot</td><td>Automates configuration at launch</td><td>Cloud-init shell script</td></tr>
+      <tr><td class="strong">Spot Instance</td><td>Spare capacity at discount, reclaimable</td><td>Huge cost savings for fault-tolerant workloads</td><td>Batch processing, CI runners</td></tr>
+      <tr><td class="strong">Reserved Instance / Savings Plan</td><td>Committed-use discount</td><td>Cost optimization for steady-state workloads</td><td>1-yr/3-yr commitment</td></tr>
+      <tr><td class="strong">Placement Group</td><td>Controls physical instance proximity</td><td>Latency vs fault-isolation tradeoff</td><td>Cluster for HPC</td></tr>
+      <tr><td class="strong">ASG</td><td>Auto Scaling Group</td><td>Maintains desired instance count automatically</td><td>Min 2 / Desired 4 / Max 10</td></tr>
+      <tr><td class="strong">IMDS</td><td>Instance Metadata Service</td><td>Local endpoint for instance identity/credentials</td><td><code>169.254.169.254</code></td></tr>
+      <tr><td class="strong">Nitro System</td><td>AWS's custom hypervisor/hardware stack</td><td>Near-bare-metal performance, smaller attack surface</td><td>All current-gen instance types</td></tr>
+      <tr><td class="strong">Dedicated Host / Instance</td><td>Physical isolation from other tenants</td><td>Compliance/licensing requirements</td><td>BYOL Windows Server</td></tr>
+      <tr><td class="strong">ENA / EFA</td><td>Enhanced networking drivers</td><td>Higher bandwidth / lower latency for HPC</td><td>ML training clusters</td></tr>
+    </table>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <div class="eyebrow">05</div>
+    <h2>AWS Console walkthrough</h2>
+    <p>Step-by-step to launch a production-sensible instance via the Console.</p>
+    <div class="card">
+      <h4 style="margin-top:0;">1. Name and OS image</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> a tagged name and an AMI (e.g. Amazon Linux 2023). <strong>Why:</strong> Amazon Linux is patched by AWS and tuned for EC2. <strong>Behind the scenes:</strong> the AMI ID is resolved to a snapshot in the target region. <strong>Production rec:</strong> use a golden AMI, not the raw base image, once you have configuration to bake in. <strong>Security:</strong> only use AMIs from AWS, verified marketplace vendors, or your own account — never an untrusted community AMI. <strong>Cost:</strong> some marketplace AMIs carry an hourly software fee on top of instance cost.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">2. Instance type</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> e.g. <code>t3.micro</code> for testing, <code>m6i.large</code> for production web. <strong>Why:</strong> match vCPU/RAM ratio to workload. <strong>Behind the scenes:</strong> determines the physical host class you're scheduled onto. <strong>Production rec:</strong> benchmark under real load before committing to a size; don't guess. <strong>Cost:</strong> instance type is the single biggest line item on your bill — right-sizing matters more than almost anything else here.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">3. Key pair</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> create new or choose existing. <strong>Why:</strong> needed for SSH access. <strong>Behind the scenes:</strong> only the public key is stored by AWS; private key is downloaded once and never recoverable. <strong>Production rec:</strong> use Session Manager (SSM) instead of SSH keys where possible — no key to lose, no port 22 to expose. <strong>Security:</strong> never commit the .pem file to source control.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">4. Network settings</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> VPC, subnet (public or private), auto-assign public IP, security group rules. <strong>Why:</strong> determines reachability. <strong>Behind the scenes:</strong> an ENI is created in the chosen subnet; SG rules are attached to that ENI. <strong>Production rec:</strong> application instances go in <strong>private subnets</strong>, reachable only via a load balancer in a public subnet. <strong>Security:</strong> never open SSH/RDP to 0.0.0.0/0 — restrict to a bastion/VPN CIDR or use SSM. <strong>Cost:</strong> a NAT Gateway for private-subnet outbound traffic has its own hourly + per-GB cost.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">5. Storage</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> volume type (gp3 default), size, "Delete on Termination" flag, encryption. <strong>Why:</strong> gp3 gives baseline 3000 IOPS/125MB/s independent of size, cheaper than gp2 at equivalent performance. <strong>Behind the scenes:</strong> creates an EBS volume in the same AZ as the instance. <strong>Production rec:</strong> enable encryption by default at the account level (EBS encryption by default setting). <strong>Security:</strong> unencrypted volumes are a common compliance finding. <strong>Cost:</strong> oversized, unused volumes are a classic source of silent waste.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;">6. IAM instance profile & advanced details</h4>
+      <p style="font-size:13.5px;"><strong>Select:</strong> attach an IAM role scoped to least privilege, set IMDSv2 to "required", add user-data if bootstrapping. <strong>Why:</strong> avoids hardcoded credentials and closes the IMDSv1 SSRF risk. <strong>Behind the scenes:</strong> the role's trust policy already allows <code>ec2.amazonaws.com</code>; STS issues rotating temp credentials to the instance automatically. <strong>Production rec:</strong> one narrowly-scoped role per application tier, not one shared admin-ish role. <strong>Security:</strong> this is the single most impactful IAM decision at launch time.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <div class="eyebrow">06</div>
+    <h2>AWS CLI commands</h2>
+
+    <h3>A. Beginner</h3>
+    <div class="codeblock"><span class="fname">describe & launch</span><pre><span class="c"># List instances in the current region</span>
+aws ec2 describe-instances --query <span class="s">"Reservations[].Instances[].[InstanceId,State.Name,InstanceType]"</span> --output table
+
+<span class="c"># Launch a basic instance</span>
+aws ec2 run-instances \
+  --image-id ami-0abcd1234ef567890 \
+  --instance-type t3.micro \
+  --key-name my-key \
+  --security-group-ids sg-0123456789abcdef0 \
+  --subnet-id subnet-0123456789abcdef0 \
+  --count 1
+
+<span class="c"># Stop / Start / Terminate</span>
+aws ec2 stop-instances --instance-ids i-0123456789abcdef0
+aws ec2 start-instances --instance-ids i-0123456789abcdef0
+<span class="rd">aws ec2 terminate-instances --instance-ids i-0123456789abcdef0   # DESTRUCTIVE</span></pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> <code>describe-instances</code> with a <code>--filters</code> flag is the backbone of most inventory/automation scripts. <strong>Common error:</strong> <code>UnauthorizedOperation</code> — the IAM identity lacks <code>ec2:RunInstances</code> or related resource-level permissions. <strong>Troubleshoot:</strong> check the attached policy's Action/Resource/Condition against what you're requesting via <code>aws sts get-caller-identity</code> plus IAM policy simulator.</p>
+
+    <h3>B. Intermediate</h3>
+    <div class="codeblock"><span class="fname">tags, volumes, snapshots</span><pre><span class="c"># Tag a resource</span>
+aws ec2 create-tags --resources i-0123456789abcdef0 --tags Key=Environment,Value=Production
+
+<span class="c"># Create an EBS snapshot (backup)</span>
+aws ec2 create-snapshot --volume-id vol-0123456789abcdef0 --description <span class="s">"pre-patch backup"</span>
+
+<span class="c"># Attach an existing volume</span>
+aws ec2 attach-volume --volume-id vol-0123456789abcdef0 --instance-id i-0123456789abcdef0 --device /dev/sdf
+
+<span class="c"># Allocate and associate an Elastic IP</span>
+aws ec2 allocate-address --domain vpc
+aws ec2 associate-address --instance-id i-0123456789abcdef0 --allocation-id eipalloc-0123456789abcdef0</pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> snapshotting before any risky change (patching, migration) is a standard runbook step. <strong>Common error:</strong> <code>VolumeInUse</code> when attaching a device name already taken — check <code>describe-volumes</code> for existing mappings first.</p>
+
+    <h3>C. Advanced</h3>
+    <div class="codeblock"><span class="fname">launch templates, ASG</span><pre><span class="c"># Create a launch template (used by ASGs)</span>
+aws ec2 create-launch-template \
+  --launch-template-name prod-web-lt \
+  --version-description <span class="s">"v1"</span> \
+  --launch-template-data file://lt-data.json
+
+<span class="c"># Create an Auto Scaling Group from that template</span>
+aws autoscaling create-auto-scaling-group \
+  --auto-scaling-group-name prod-web-asg \
+  --launch-template LaunchTemplateName=prod-web-lt,Version='$Latest' \
+  --min-size 2 --max-size 10 --desired-capacity 2 \
+  --vpc-zone-identifier <span class="s">"subnet-aaa,subnet-bbb"</span> \
+  --target-group-arns arn:aws:elasticloadbalancing:...:targetgroup/prod-tg/abc123
+
+<span class="c"># Request Spot instances for fault-tolerant workloads</span>
+aws ec2 request-spot-instances \
+  --instance-count 4 \
+  --type <span class="s">"one-time"</span> \
+  --launch-specification file://spot-spec.json</pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> launch templates + ASG is the standard pattern for any horizontally-scaled web tier. <strong>Common error:</strong> ASG stuck with 0 healthy instances — usually a bad AMI/user-data script failing health checks, or a target group health check misconfigured.</p>
+
+    <h3>D. Production</h3>
+    <div class="codeblock"><span class="fname">IMDSv2 enforcement, encryption defaults</span><pre><span class="c"># Enforce IMDSv2 on an existing instance</span>
+aws ec2 modify-instance-metadata-options \
+  --instance-id i-0123456789abcdef0 \
+  --http-tokens required \
+  --http-endpoint enabled
+
+<span class="c"># Enable EBS encryption by default for the account/region</span>
+aws ec2 enable-ebs-encryption-by-default
+
+<span class="c"># Rotate: create AMI from a running instance for redeploy</span>
+aws ec2 create-image --instance-id i-0123456789abcdef0 --name <span class="s">"golden-ami-2026-08-09"</span> --no-reboot</pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> IMDSv2 enforcement across the fleet is a standard hardening pass after any SSRF finding. <strong>Common error:</strong> forcing IMDSv2 breaks older SDK versions that don't support token-based requests — check SDK versions before a fleet-wide rollout.</p>
+
+    <h3>E. Troubleshooting</h3>
+    <div class="codeblock"><span class="fname">diagnostics</span><pre><span class="c"># Check instance status (system + instance level checks)</span>
+aws ec2 describe-instance-status --instance-ids i-0123456789abcdef0
+
+<span class="c"># Get console output (useful when SSH is unreachable)</span>
+aws ec2 get-console-output --instance-id i-0123456789abcdef0
+
+<span class="c"># Get a screenshot of the boot screen (Windows/stuck boots)</span>
+aws ec2 get-console-screenshot --instance-id i-0123456789abcdef0
+
+<span class="c"># Inspect security group rules</span>
+aws ec2 describe-security-groups --group-ids sg-0123456789abcdef0</pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> <code>describe-instance-status</code> is the first command in almost every "instance unreachable" incident — it separates a hypervisor/host problem (system status) from an OS-level problem (instance status). <strong>Common error:</strong> status check failure with no console output — often a corrupted filesystem or bad kernel; recovery is via volume detach/mount on a rescue instance.</p>
+
+    <h3>F. Automation</h3>
+    <div class="codeblock"><span class="fname">scripted patch cycle</span><pre><span class="c"># Example: cordon, patch, and validate via SSM (no SSH needed)</span>
+aws ssm send-command \
+  --instance-ids i-0123456789abcdef0 \
+  --document-name <span class="s">"AWS-RunPatchBaseline"</span> \
+  --parameters <span class="s">'{"Operation":["Install"]}'</span>
+
+aws ssm list-command-invocations --command-id &lt;command-id&gt; --details</pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> SSM-driven patch automation removes the need for SSH/bastion entirely for routine maintenance — the standard for large fleets.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <div class="eyebrow">07</div>
+    <h2>Linux / OS commands</h2>
+    <table>
+      <tr><th>Command</th><th>What it checks</th><th>Why you'd use it</th><th>Problem it identifies</th></tr>
+      <tr><td><code>systemctl status app</code></td><td>Service state</td><td>Confirm your app process is actually running</td><td>Crashed/failed service</td></tr>
+      <tr><td><code>journalctl -u app -f</code></td><td>Live service logs</td><td>Watch startup/crash logs in real time</td><td>Boot failures, exceptions</td></tr>
+      <tr><td><code>top / htop</code></td><td>CPU & memory usage per process</td><td>Find what's consuming resources</td><td>Runaway process, memory leak</td></tr>
+      <tr><td><code>ss -tulnp</code></td><td>Listening ports & owning process</td><td>Confirm app is bound to the expected port</td><td>Port conflict, app not listening</td></tr>
+      <tr><td><code>curl -v localhost:PORT</code></td><td>Local app response</td><td>Isolate "is it the app or the network"</td><td>App is up but network path is broken</td></tr>
+      <tr><td><code>dig / nslookup</code></td><td>DNS resolution</td><td>Confirm hostname resolves correctly</td><td>DNS misconfiguration</td></tr>
+      <tr><td><code>ping / traceroute</code></td><td>Reachability & hop path</td><td>Confirm network path exists</td><td>Routing/SG/NACL blocking traffic</td></tr>
+      <tr><td><code>df -h</code></td><td>Disk space per volume</td><td>Check for a full disk</td><td>App crashes from "no space left"</td></tr>
+      <tr><td><code>free -h</code></td><td>Memory + swap usage</td><td>Check for memory pressure</td><td>OOM-killer terminating the app</td></tr>
+      <tr><td><code>vmstat 1</code></td><td>CPU/memory/IO snapshot over time</td><td>Spot sustained resource pressure</td><td>CPU steal time (noisy neighbor on shared tenancy)</td></tr>
+      <tr><td><code>iostat -xz 1</code></td><td>Disk I/O latency & utilization</td><td>Diagnose slow disk-bound apps</td><td>EBS volume under-provisioned for IOPS</td></tr>
+      <tr><td><code>lsof -i :PORT</code></td><td>Which process owns a port/file</td><td>Find what's blocking a bind</td><td>"Address already in use" errors</td></tr>
+      <tr><td><code>grep/tail -f /var/log/...</code></td><td>Application/system logs</td><td>Root-cause a specific failure</td><td>Stack traces, error patterns</td></tr>
+      <tr><td><code>chmod / chown</code></td><td>File permissions/ownership</td><td>Fix permission-denied errors</td><td>App can't read its own config/key file</td></tr>
+      <tr><td><code>dmesg | tail</code></td><td>Kernel ring buffer</td><td>Check for OOM kills, hardware errors</td><td>"Killed" process with no app-level error</td></tr>
+    </table>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <div class="eyebrow">08</div>
+    <h2>Real-world production use cases</h2>
+    <div class="card"><h4 style="margin-top:0;">1. Horizontally-scaled web tier</h4><p style="font-size:13.5px;"><strong>Problem:</strong> traffic varies 10x between day and night. <strong>Architecture:</strong> ALB → ASG (private subnets, 2+ AZs) → RDS Multi-AZ. <strong>How EC2 solves it:</strong> ASG scales the fleet on request count/CPU. <strong>Security:</strong> instances have no public IP; only ALB is internet-facing. <strong>Monitoring:</strong> CloudWatch target response time + healthy host count. <strong>Scaling:</strong> target-tracking policy on ALB request count per target. <strong>Failure scenario:</strong> one AZ goes down — ASG relaunches lost capacity in remaining AZs. <strong>Cost:</strong> mix of Reserved (baseline) + Spot (burst) instances.</p></div>
+    <div class="card"><h4 style="margin-top:0;">2. Self-managed batch processing fleet</h4><p style="font-size:13.5px;"><strong>Problem:</strong> nightly data processing job needs 100 cores for 2 hours only. <strong>Architecture:</strong> Spot Fleet triggered by an EventBridge schedule, pulling jobs from SQS. <strong>How EC2 solves it:</strong> Spot gives ~70% discount for fully interruption-tolerant work. <strong>Security:</strong> IAM role scoped to only the specific SQS queue/S3 bucket. <strong>Monitoring:</strong> queue depth + spot interruption notices. <strong>Scaling:</strong> fleet size tied to queue backlog. <strong>Failure scenario:</strong> Spot interruption — job is idempotent and re-queues itself. <strong>Cost:</strong> this is the textbook Spot use case.</p></div>
+    <div class="card"><h4 style="margin-top:0;">3. Bastion-free administrative access</h4><p style="font-size:13.5px;"><strong>Problem:</strong> engineers need shell access to private-subnet instances without exposing SSH. <strong>Architecture:</strong> SSM Session Manager, no bastion host, no open port 22. <strong>How EC2 solves it:</strong> SSM agent (pre-installed on AL2023) connects outbound only. <strong>Security:</strong> access controlled entirely by IAM policy + optional session logging to S3/CloudWatch. <strong>Monitoring:</strong> CloudTrail logs every session start. <strong>Failure scenario:</strong> SSM agent not running — instance becomes unreachable via SSM, need console/EC2 Serial Console as fallback. <strong>Cost:</strong> free — no bastion instance to run 24/7.</p></div>
+    <div class="card"><h4 style="margin-top:0;">4. Self-hosted CI/CD runners</h4><p style="font-size:13.5px;"><strong>Problem:</strong> hosted CI minutes are expensive at scale; builds need custom tooling. <strong>Architecture:</strong> ephemeral EC2 runners launched per-job via ASG or Lambda-triggered <code>run-instances</code>, terminated after job completion. <strong>Security:</strong> short-lived instance role scoped to build artifacts bucket only. <strong>Monitoring:</strong> build duration + runner launch failures. <strong>Failure scenario:</strong> runner fails to register — usually a user-data script error; check console output. <strong>Cost:</strong> Spot for non-critical branches, On-Demand for main/release builds.</p></div>
+    <div class="card"><h4 style="margin-top:0;">5. Licensed legacy software migration</h4><p style="font-size:13.5px;"><strong>Problem:</strong> an ERP system requires per-core licensing tied to physical hardware. <strong>Architecture:</strong> Dedicated Hosts for full physical isolation and BYOL compliance. <strong>Security:</strong> stricter network isolation, often in a dedicated VPC. <strong>Monitoring:</strong> host-level utilization to justify host count. <strong>Failure scenario:</strong> host hardware failure — requires host replacement and instance migration, planned via maintenance windows. <strong>Cost:</strong> Dedicated Hosts are the most expensive EC2 purchase option — justified only by licensing/compliance need.</p></div>
+    <div class="card"><h4 style="margin-top:0;">6. Machine learning training</h4><p style="font-size:13.5px;"><strong>Problem:</strong> training a large model needs GPU compute for days at a time. <strong>Architecture:</strong> <code>p-family</code>/<code>g-family</code> GPU instances in a cluster placement group with EFA networking. <strong>Security:</strong> training data accessed via VPC endpoint to S3, never public internet. <strong>Monitoring:</strong> GPU utilization via CloudWatch agent. <strong>Failure scenario:</strong> checkpointing to S3 regularly so a Spot interruption doesn't lose days of training. <strong>Cost:</strong> GPU instances are extremely expensive — Spot + checkpointing is the standard cost-control pattern.</p></div>
+    <div class="card"><h4 style="margin-top:0;">7. Multi-region disaster recovery</h4><p style="font-size:13.5px;"><strong>Problem:</strong> a regional AWS outage must not take down the whole business. <strong>Architecture:</strong> warm-standby ASG in a secondary region, AMIs replicated cross-region, Route 53 failover routing. <strong>Security:</strong> identical IAM/security posture replicated via IaC in both regions. <strong>Monitoring:</strong> Route 53 health checks trigger failover. <strong>Failure scenario:</strong> primary region degraded — DNS fails over, standby ASG scales from minimal to full capacity. <strong>Cost:</strong> warm standby costs more than backup-only DR but has far better RTO.</p></div>
+    <div class="card"><h4 style="margin-top:0;">8. Compliance-isolated workload</h4><p style="font-size:13.5px;"><strong>Problem:</strong> PCI-DSS workload must be network-isolated from the rest of the environment. <strong>Architecture:</strong> dedicated VPC/subnet, no internet route, VPC endpoints only, strict SG/NACL pairing. <strong>Security:</strong> CloudTrail + Config rules enforcing encryption and no public IP. <strong>Monitoring:</strong> GuardDuty + Config compliance dashboard. <strong>Failure scenario:</strong> a Config rule flags a non-compliant change — auto-remediation via Lambda reverts it. <strong>Cost:</strong> compliance tooling overhead is justified by audit requirements.</p></div>
+    <div class="card"><h4 style="margin-top:0;">9. Blue/green deployment</h4><p style="font-size:13.5px;"><strong>Problem:</strong> zero-downtime releases with instant rollback. <strong>Architecture:</strong> two ASGs (blue/green) behind the same ALB, traffic shifted via target group weighting. <strong>Security:</strong> identical security posture on both environments by definition (same launch template). <strong>Monitoring:</strong> error rate comparison between blue and green during shift. <strong>Failure scenario:</strong> green shows elevated errors — instantly shift weight back to blue. <strong>Cost:</strong> running two fleets briefly during deploys costs more but de-risks releases.</p></div>
+    <div class="card"><h4 style="margin-top:0;">10. Cost-optimized dev/test environments</h4><p style="font-size:13.5px;"><strong>Problem:</strong> dev instances run 24/7 but are only used 9 hours a day. <strong>Architecture:</strong> EventBridge-scheduled Lambda stopping/starting instances outside business hours. <strong>Security:</strong> unaffected — same SGs/IAM apply when running. <strong>Monitoring:</strong> Cost Explorer tagged by environment to prove savings. <strong>Failure scenario:</strong> an engineer needs the instance outside hours — self-service Lambda to manually start it. <strong>Cost:</strong> can cut dev/test EC2 spend by roughly 60-70%.</p></div>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <div class="eyebrow">09</div>
+    <h2>Hands-on labs</h2>
+
+    <div class="lab"><div class="lvl">Lab 1 · Beginner</div><h3>Launch and connect to your first instance</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> launch an Amazon Linux instance and SSH into it. <strong>Prerequisites:</strong> AWS account, default VPC. <strong>Steps:</strong> create a key pair → launch a <code>t3.micro</code> with SSH (22) open to your IP only → <code>ssh -i key.pem ec2-user@&lt;public-ip&gt;</code> → run <code>uptime</code>. <strong>Validation:</strong> <code>aws ec2 describe-instance-status --instance-ids &lt;id&gt;</code> shows both checks passed. <strong>Common error:</strong> connection timeout — usually SG doesn't allow your current IP. <strong>Cleanup:</strong> <code class="rd">aws ec2 terminate-instances --instance-ids &lt;id&gt;</code>. <strong>What you learned:</strong> the launch → boot → connect flow end to end.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 2 · Basic production</div><h3>Instance behind a load balancer</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> two instances in two AZs behind an ALB serving a simple web page. <strong>Steps:</strong> launch 2 instances in different AZs, install nginx via user-data → create a target group, register both instances → create an ALB in public subnets. <strong>Validation:</strong> hit the ALB DNS name repeatedly, confirm responses alternate between instances. <strong>Common error:</strong> target shows "unhealthy" — check SG allows ALB→instance on the health check port. <strong>Cleanup:</strong> delete ALB, target group, then terminate instances. <strong>What you learned:</strong> the fundamental HA web pattern.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 3 · Intermediate</div><h3>Auto Scaling Group with a launch template</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> replace Lab 2's manual instances with a self-healing ASG. <strong>Steps:</strong> create a launch template referencing your golden AMI → create an ASG (min 2, max 4) attached to the target group from Lab 2 → terminate an instance manually and watch it get replaced. <strong>Validation:</strong> <code>aws autoscaling describe-auto-scaling-groups</code> shows desired capacity restored within minutes. <strong>Common error:</strong> new instances fail health checks — check user-data script logs via console output. <strong>Cleanup:</strong> delete ASG (it terminates its own instances), then the launch template.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 4 · Advanced</div><h3>Spot Fleet for a batch job</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> run a disposable batch job across multiple Spot instance types for resilience. <strong>Steps:</strong> write a Spot Fleet request spanning 3 instance types across 2 AZs → launch → observe instances process a sample SQS queue → simulate interruption by manually terminating one. <strong>Validation:</strong> queue backlog still drains despite the interruption. <strong>Common error:</strong> Spot request stuck "pending-fulfillment" — insufficient capacity for chosen types; widen the type list. <strong>Cleanup:</strong> cancel the Spot Fleet request, delete the SQS queue.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 5 · Security</div><h3>Harden an instance: IMDSv2, private subnet, SSM-only access</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> remove SSH entirely, enforce IMDSv2, move instance to a private subnet. <strong>Steps:</strong> launch in a private subnet with an SSM-capable IAM role → connect via <code>aws ssm start-session</code> → run <code>modify-instance-metadata-options --http-tokens required</code> → confirm <code>curl</code> to IMDS without a token now fails. <strong>Validation:</strong> SSM session succeeds; direct SSH from your machine fails (no route). <strong>Common error:</strong> SSM session fails — instance role missing <code>AmazonSSMManagedInstanceCore</code> policy. <strong>Cleanup:</strong> terminate instance.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 6 · Monitoring</div><h3>CloudWatch alarms and dashboards</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> alert when CPU exceeds 80% for 5 minutes. <strong>Steps:</strong> install the CloudWatch agent for memory/disk metrics (not collected by default) → create an alarm on <code>CPUUtilization</code> → stress-test the CPU with <code>stress-ng</code> → confirm the alarm fires and notifies an SNS topic. <strong>Validation:</strong> alarm state transitions to ALARM in the console within the evaluation period. <strong>Common error:</strong> memory alarms never trigger — default EC2 metrics don't include memory; the CloudWatch agent is required. <strong>Cleanup:</strong> delete alarm, remove agent, terminate instance.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 7 · Automation</div><h3>Terraform-managed instance + ASG</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> recreate Lab 3 entirely as code. <strong>Steps:</strong> write a Terraform config with <code>aws_launch_template</code> and <code>aws_autoscaling_group</code> resources → <code>terraform plan</code> → <code>terraform apply</code> → modify desired capacity in code and re-apply. <strong>Validation:</strong> <code>terraform plan</code> shows zero drift after apply. <strong>Common error:</strong> state drift after a manual console change — always change infrastructure through code once it's under Terraform. <strong>Cleanup:</strong> <code class="rd">terraform destroy</code>.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 8 · Failure simulation</div><h3>Simulate an AZ failure</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> prove your ASG survives an AZ outage. <strong>Steps:</strong> with an ASG spanning 2 AZs, manually terminate all instances in one AZ simultaneously → watch behavior. <strong>Validation:</strong> ASG launches replacement capacity in the remaining healthy AZ; ALB stops routing to the dead AZ automatically. <strong>Common error:</strong> ASG only configured for a single subnet/AZ — the "failure" is actually a design gap discovered by the test. <strong>Cleanup:</strong> scale back down, verify no orphaned resources.</p></div>
+
+    <div class="lab"><div class="lvl">Lab 9 · Production architecture</div><h3>Full 3-tier reference build</h3>
+    <p style="font-size:13.5px;"><strong>Objective:</strong> public ALB → private ASG web tier → private RDS, fully IaC, monitored, alarmed. <strong>Steps:</strong> combine Labs 2–7 into one Terraform module set: VPC with public/private subnets across 2 AZs, ALB, ASG with launch template + IMDSv2 + SSM role, RDS Multi-AZ, CloudWatch alarms, SNS notification. <strong>Validation:</strong> full request path works end-to-end and an AZ-failure test (Lab 8) still passes. <strong>Cleanup:</strong> <code class="rd">terraform destroy</code> the entire stack; confirm no orphaned EBS snapshots/EIPs remain (they are not always destroyed automatically).</p></div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <div class="eyebrow">10</div>
+    <h2>Production-ready implementation</h2>
+    <p>How a professional team actually deploys EC2 — every layer is deliberate, not default.</p>
+    <table>
+      <tr><th>Area</th><th>Beginner setup</th><th>Production setup</th></tr>
+      <tr><td class="strong">Availability</td><td>Single instance, single AZ</td><td>ASG across ≥2 AZs behind an ALB, min capacity ≥2</td></tr>
+      <tr><td class="strong">Networking</td><td>Default VPC, public subnet, public IP</td><td>Custom VPC, private subnets for app tier, NAT for egress</td></tr>
+      <tr><td class="strong">Access</td><td>SSH open to 0.0.0.0/0</td><td>SSM Session Manager only, no inbound SSH/RDP</td></tr>
+      <tr><td class="strong">IAM</td><td>No role, or hardcoded access keys on the box</td><td>Least-privilege instance profile, no static keys anywhere</td></tr>
+      <tr><td class="strong">Storage</td><td>Unencrypted default gp2 volume</td><td>Encrypted gp3, sized to workload, snapshot lifecycle policy</td></tr>
+      <tr><td class="strong">Patching</td><td>Manual, ad hoc</td><td>SSM Patch Manager on a maintenance window schedule</td></tr>
+      <tr><td class="strong">Deployment</td><td>Manual SSH + copy files</td><td>Golden AMI pipeline + launch template versioning + IaC</td></tr>
+      <tr><td class="strong">Monitoring</td><td>None beyond default console view</td><td>CloudWatch agent, custom metrics, alarms, dashboards, SNS/PagerDuty</td></tr>
+      <tr><td class="strong">Logging</td><td>Logs only on the instance disk</td><td>Shipped to CloudWatch Logs / centralized log aggregation</td></tr>
+      <tr><td class="strong">Backup/DR</td><td>None</td><td>Automated EBS snapshot lifecycle, cross-region AMI copy, tested restore</td></tr>
+      <tr><td class="strong">Scaling</td><td>Manually resize when it gets slow</td><td>Target-tracking Auto Scaling policies</td></tr>
+      <tr><td class="strong">Cost</td><td>On-Demand only, oversized instance type</td><td>Right-sized + Reserved/Savings Plan baseline + Spot for elastic burst</td></tr>
+      <tr><td class="strong">Compliance</td><td>Not tracked</td><td>AWS Config rules, tagging policy, CloudTrail retained centrally</td></tr>
+      <tr><td class="strong">Automation/IaC</td><td>Click-ops in console</td><td>Terraform/CloudFormation, code-reviewed, applied via CI/CD</td></tr>
+    </table>
+    <div class="callout info"><span class="lbl">What a production engineer actually does</span><p>Treats every instance as disposable — nothing important lives only on local disk, configuration is baked into the AMI or applied via automation on boot, and any instance can be terminated and replaced without a human noticing except via an alarm that auto-resolves.</p></div>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <div class="eyebrow">11</div>
+    <h2>Security</h2>
+    <ul class="plain">
+      <li><strong>IAM / least privilege:</strong> one narrowly scoped role per application tier — never attach <code>AdministratorAccess</code> to an instance profile.</li>
+      <li><strong>Encryption:</strong> enable EBS encryption by default at the account level; use KMS customer-managed keys when you need audit control over who can decrypt.</li>
+      <li><strong>Network security:</strong> security groups scoped to specific source SGs/CIDRs, never 0.0.0.0/0 for management ports; NACLs as a coarse subnet-level backstop.</li>
+      <li><strong>Public vs private:</strong> only load balancers and bastions (if used at all) sit in public subnets; application and data instances stay private.</li>
+      <li><strong>Secrets/credentials:</strong> never bake secrets into an AMI or user-data in plaintext — pull them at boot from Secrets Manager or SSM Parameter Store using the instance role.</li>
+      <li><strong>IMDSv2:</strong> enforce <code>--http-tokens required</code> fleet-wide to close the SSRF-credential-theft path.</li>
+      <li><strong>Logging:</strong> CloudTrail for all EC2 API calls, VPC Flow Logs for network traffic, centralized and access-restricted.</li>
+      <li><strong>Common mistakes:</strong> SSH open to the world, unencrypted volumes, shared broad IAM roles, secrets in user-data, never rotating AMIs so patches never actually land.</li>
+    </ul>
+    <div class="grid2">
+      <div class="callout bad"><span class="lbl">Insecure</span><p>SG inbound rule: <code>0.0.0.0/0 → port 22</code>, instance role has <code>s3:*</code> on all buckets, IMDSv1 allowed, secrets hardcoded in user-data.</p></div>
+      <div class="callout good"><span class="lbl">Secure</span><p>No inbound SSH at all (SSM only), role scoped to one bucket prefix, IMDSv2 required, secrets pulled from Secrets Manager at boot.</p></div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <div class="eyebrow">12</div>
+    <h2>Networking</h2>
+    <p>EC2 networking is governed by VPC constructs: subnets, route tables, gateways, and the two firewall layers.</p>
+    <div class="ascii">Client
+  │
+  ▼
+Internet
+  │
+  ▼
+[Internet Gateway]
+  │
+  ▼
+Public Subnet ── [ALB]
+  │
+  ▼
+Route Table (private) ──▶ [NAT Gateway] ──▶ Internet Gateway  (outbound only, for patches/updates)
+  │
+  ▼
+Private Subnet ── [EC2 instance in ASG]
+  │
+  ▼
+Security Group (stateful, instance-level)
+  │
+  ▼
+NACL (stateless, subnet-level) ── evaluated on the way in AND out</div>
+
+    <h3>Traffic flow explained</h3>
+    <ul class="plain">
+      <li>Public-facing traffic hits the <strong>Internet Gateway</strong>, which routes to the public subnet where the <strong>ALB</strong> lives.</li>
+      <li>The ALB forwards to instances in <strong>private subnets</strong> — those instances have no public IP and cannot be reached directly from the internet.</li>
+      <li>Outbound traffic from private instances (patches, API calls to the internet) routes through a <strong>NAT Gateway</strong> in the public subnet, which has an IGW route.</li>
+      <li>Every packet in and out of an instance's ENI passes through its <strong>security group</strong> (stateful — only need to allow one direction) and the subnet's <strong>NACL</strong> (stateless — must explicitly allow both directions).</li>
+      <li><strong>VPC endpoints</strong> (Gateway for S3/DynamoDB, Interface for most other services) let private instances reach AWS services without ever routing through the NAT Gateway or public internet at all — cheaper and more secure.</li>
+    </ul>
+
+    <table>
+      <tr><th>Concept</th><th>Role</th></tr>
+      <tr><td class="strong">VPC</td><td>Your isolated virtual network, defines the overall CIDR block</td></tr>
+      <tr><td class="strong">Subnet</td><td>A slice of the VPC CIDR pinned to one AZ; public (has IGW route) or private</td></tr>
+      <tr><td class="strong">Route Table</td><td>Determines where traffic from a subnet is allowed to go</td></tr>
+      <tr><td class="strong">Internet Gateway</td><td>Enables two-way internet connectivity for public subnets</td></tr>
+      <tr><td class="strong">NAT Gateway</td><td>Enables one-way (outbound) internet for private subnets</td></tr>
+      <tr><td class="strong">Security Group</td><td>Stateful, instance-level, allow-only</td></tr>
+      <tr><td class="strong">NACL</td><td>Stateless, subnet-level, allow + deny, evaluated in rule-number order</td></tr>
+      <tr><td class="strong">VPC Endpoint</td><td>Private connectivity to AWS services without traversing the public internet</td></tr>
+      <tr><td class="strong">ENA/EFA</td><td>Enhanced networking drivers for high-throughput/low-latency workloads</td></tr>
+    </table>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <div class="eyebrow">13</div>
+    <h2>Monitoring & logging</h2>
+    <p>EC2 emits default CloudWatch metrics automatically (CPU, network, disk I/O at the hypervisor level); memory and disk-space-used require the CloudWatch agent since they're only visible from inside the OS.</p>
+    <table>
+      <tr><th>Metric</th><th>Measures</th><th>Normal</th><th>Warning</th><th>Critical</th><th>Likely cause</th><th>Action</th></tr>
+      <tr><td><code>CPUUtilization</code></td><td>vCPU usage %</td><td>&lt;60%</td><td>60-85% sustained</td><td>&gt;90% sustained</td><td>Undersized instance / traffic spike</td><td>Scale out or resize</td></tr>
+      <tr><td><code>CPUCreditBalance</code></td><td>Burstable (t-family) credit reserve</td><td>Stable/growing</td><td>Steadily declining</td><td>Near zero</td><td>Sustained load on a burstable type</td><td>Move to non-burstable family or unlimited mode</td></tr>
+      <tr><td><code>NetworkIn/Out</code></td><td>Bytes transferred</td><td>Matches expected traffic</td><td>Unexpected spike</td><td>Near ENA limit</td><td>DDoS, misbehaving client, data exfil</td><td>Check flow logs, SG rules</td></tr>
+      <tr><td><code>StatusCheckFailed_System</code></td><td>Underlying host health</td><td>0</td><td>—</td><td>1</td><td>Hardware/hypervisor issue</td><td>Stop/start to relocate to new host</td></tr>
+      <tr><td><code>StatusCheckFailed_Instance</code></td><td>OS-level reachability</td><td>0</td><td>—</td><td>1</td><td>OS crash, network misconfig, full disk</td><td>Console output, reboot, check disk</td></tr>
+      <tr><td><code>DiskReadOps/WriteOps</code></td><td>EBS I/O volume</td><td>Within provisioned IOPS</td><td>Near limit</td><td>Throttled</td><td>Under-provisioned EBS</td><td>Upgrade to gp3 with higher IOPS or io2</td></tr>
+      <tr><td>Custom: <code>mem_used_percent</code></td><td>RAM usage (via CW agent)</td><td>&lt;75%</td><td>75-90%</td><td>&gt;90%</td><td>Memory leak, undersized instance</td><td>Investigate process, resize, restart</td></tr>
+    </table>
+    <p style="font-size:13.5px;"><strong>Production example:</strong> an alarm on <code>StatusCheckFailed_System</code> ≥ 1 for 2 datapoints triggers an SNS notification and, optionally, an automated instance recovery action — AWS can automatically migrate the instance to healthy hardware without human intervention.</p>
+  </section>
+
+  <!-- 14 -->
+  <section id="s14">
+    <div class="eyebrow">14</div>
+    <h2>Troubleshooting master guide</h2>
+    <p><strong>"Something is not working. What do I check first?"</strong> — work outward from the symptom, in this order:</p>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px;">
+      <li style="margin-bottom:6px;">Identify the exact symptom (timeout? 5xx? can't SSH? high latency?)</li>
+      <li style="margin-bottom:6px;">Check AWS Service Health Dashboard for regional issues</li>
+      <li style="margin-bottom:6px;">Check instance configuration (type, AMI, user-data ran successfully)</li>
+      <li style="margin-bottom:6px;">Check IAM (does the role/caller have the needed permissions?)</li>
+      <li style="margin-bottom:6px;">Check networking (route tables, IGW/NAT, subnet)</li>
+      <li style="margin-bottom:6px;">Check security (SG, NACL, IMDS settings)</li>
+      <li style="margin-bottom:6px;">Check application/system logs</li>
+      <li style="margin-bottom:6px;">Check CloudWatch metrics for anomalies</li>
+      <li style="margin-bottom:6px;">Check dependencies (RDS, S3, downstream APIs)</li>
+      <li style="margin-bottom:6px;">Check recent changes (deploys, IaC applies, manual console edits)</li>
+      <li style="margin-bottom:6px;">Reproduce the issue in isolation if possible</li>
+      <li style="margin-bottom:6px;">Apply the smallest fix that addresses the root cause</li>
+      <li style="margin-bottom:6px;">Validate the fix under real conditions</li>
+      <li style="margin-bottom:6px;">Document root cause and prevention in a postmortem</li>
+    </ol>
+
+    <div class="incident"><h3 style="margin-top:0;">Instance unreachable via SSH</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Connection timed out on port 22<br><b>CAUSES</b> <span class="arrow">↓</span> SG doesn't allow your IP · NACL blocking · instance has no public IP/wrong route table · OS firewall blocking · instance actually down<br><b>CHECKS</b> <span class="arrow">↓</span> <code>describe-security-groups</code>, <code>describe-instance-status</code>, check route table has IGW route<br><b>LOGS</b> <span class="arrow">↓</span> <code>get-console-output</code> for boot-time failures<br><b>FIX</b> <span class="arrow">↓</span> add your current IP to SG, or use SSM Session Manager instead<br><b>VALIDATE</b> <span class="arrow">↓</span> successful SSH/SSM session<br><b>PREVENT</b> <span class="arrow">↓</span> standardize on SSM so SSH connectivity is never a dependency</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">Instance status check failed (instance-level)</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Instance running, unreachable, app down<br><b>CAUSES</b> <span class="arrow">↓</span> full disk, kernel panic, OOM kill, corrupted filesystem, bad user-data<br><b>CHECKS</b> <span class="arrow">↓</span> <code>get-console-output</code>, <code>get-console-screenshot</code><br><b>LOGS</b> <span class="arrow">↓</span> boot log in console output, <code>dmesg</code> if reachable<br><b>FIX</b> <span class="arrow">↓</span> reboot; if that fails, detach root volume, attach to a rescue instance, inspect/fix, reattach<br><b>VALIDATE</b> <span class="arrow">↓</span> status checks pass, app responds<br><b>PREVENT</b> <span class="arrow">↓</span> disk-usage alarms before it fills, memory alarms before OOM</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">ALB shows all targets unhealthy</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> 502/503 from the load balancer<br><b>CAUSES</b> <span class="arrow">↓</span> app not listening on expected port, SG doesn't allow ALB→instance, health check path returns non-200<br><b>CHECKS</b> <span class="arrow">↓</span> target group health check settings, <code>ss -tulnp</code> on instance, SG rule for health-check port<br><b>LOGS</b> <span class="arrow">↓</span> app logs for the health check path specifically<br><b>FIX</b> <span class="arrow">↓</span> correct SG rule or health check path/port<br><b>VALIDATE</b> <span class="arrow">↓</span> targets show "healthy" in target group<br><b>PREVENT</b> <span class="arrow">↓</span> bake health-check validation into your deploy pipeline</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">ASG stuck, not launching new instances</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Desired capacity not reached<br><b>CAUSES</b> <span class="arrow">↓</span> hitting a service quota (vCPU limit), bad AMI, insufficient capacity in AZ, launch template error<br><b>CHECKS</b> <span class="arrow">↓</span> ASG "Activity History" tab for the exact launch error<br><b>LOGS</b> <span class="arrow">↓</span> ASG activity log shows the API error verbatim<br><b>FIX</b> <span class="arrow">↓</span> request a quota increase, fix launch template, add more AZs/instance types<br><b>VALIDATE</b> <span class="arrow">↓</span> desired = running count<br><b>PREVENT</b> <span class="arrow">↓</span> proactively monitor quota usage vs limits</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">App can't reach S3 / another AWS service</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> AccessDenied or connection errors from the app<br><b>CAUSES</b> <span class="arrow">↓</span> missing IAM permission, wrong region endpoint, no route to a VPC endpoint from a private subnet with no NAT<br><b>CHECKS</b> <span class="arrow">↓</span> IAM policy simulator, <code>aws sts get-caller-identity</code> from the instance<br><b>LOGS</b> <span class="arrow">↓</span> CloudTrail for the exact denied action<br><b>FIX</b> <span class="arrow">↓</span> add the missing action/resource to the role's policy, or add a VPC endpoint/NAT route<br><b>VALIDATE</b> <span class="arrow">↓</span> app call succeeds<br><b>PREVENT</b> <span class="arrow">↓</span> IAM policies generated from Access Analyzer against actual usage, not guessed</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">Sudden high latency, no error rate change</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Response times climb, requests still succeed<br><b>CAUSES</b> <span class="arrow">↓</span> CPU credit exhaustion (t-family), EBS IOPS throttling, downstream DB slow, GC pauses<br><b>CHECKS</b> <span class="arrow">↓</span> <code>CPUCreditBalance</code>, <code>vmstat</code>/<code>iostat</code>, DB metrics<br><b>LOGS</b> <span class="arrow">↓</span> app-level slow-query/timing logs<br><b>FIX</b> <span class="arrow">↓</span> move off burstable type, provision more IOPS, tune GC or DB<br><b>VALIDATE</b> <span class="arrow">↓</span> latency returns to baseline<br><b>PREVENT</b> <span class="arrow">↓</span> alarm on CPU credit balance trending toward zero, not just CPU%</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">Costs spiked overnight</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Unexpected billing jump<br><b>CAUSES</b> <span class="arrow">↓</span> runaway ASG scaling, orphaned EIPs, forgotten large instances, data transfer spike, Spot fallback to On-Demand pricing<br><b>CHECKS</b> <span class="arrow">↓</span> Cost Explorer filtered by service/tag, ASG activity history<br><b>LOGS</b> <span class="arrow">↓</span> CloudTrail for who launched what and when<br><b>FIX</b> <span class="arrow">↓</span> cap ASG max size, release unused EIPs, add budget alarms<br><b>VALIDATE</b> <span class="arrow">↓</span> daily spend returns to baseline<br><b>PREVENT</b> <span class="arrow">↓</span> AWS Budgets with alert thresholds, mandatory tagging for attribution</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">Instance disappeared / can't find it</h3>
+    <div class="flow"><b>SYMPTOM</b> <span class="arrow">↓</span> Instance ID no longer in describe-instances<br><b>CAUSES</b> <span class="arrow">↓</span> Spot interruption/reclaim, ASG scale-in terminated it, someone manually terminated it, lifecycle hook auto-terminated<br><b>CHECKS</b> <span class="arrow">↓</span> CloudTrail for TerminateInstances events, ASG activity history, Spot interruption notices<br><b>LOGS</b> <span class="arrow">↓</span> CloudTrail event history with the exact caller identity<br><b>FIX</b> <span class="arrow">↓</span> relaunch from ASG/template if it was meant to be persistent<br><b>VALIDATE</b> <span class="arrow">↓</span> replacement is healthy and serving traffic<br><b>PREVENT</b> <span class="arrow">↓</span> termination protection for genuinely stateful, irreplaceable instances</div></div>
+  </section>
+
+  <!-- 15 -->
+  <section id="s15">
+    <div class="eyebrow">15</div>
+    <h2>Common errors</h2>
+    <table>
+      <tr><th>Error</th><th>Root cause</th><th>Fix</th></tr>
+      <tr><td><code>UnauthorizedOperation</code></td><td>Caller's IAM policy lacks the required action/resource</td><td>Add the missing permission; verify with IAM policy simulator</td></tr>
+      <tr><td><code>InsufficientInstanceCapacity</code></td><td>AWS has no spare capacity for that type in that AZ right now</td><td>Try another AZ, instance type, or wait/retry</td></tr>
+      <tr><td><code>InvalidKeyPair.NotFound</code></td><td>Key pair name doesn't exist in that region</td><td>Key pairs are region-scoped — create/select one in the correct region</td></tr>
+      <tr><td><code>VolumeInUse</code></td><td>Device name already attached to the instance</td><td>Check <code>describe-volumes</code> for the next free device name</td></tr>
+      <tr><td><code>DependencyViolation</code></td><td>Trying to delete a subnet/SG/VPC still referenced by a resource</td><td>Remove the dependent resource (ENI, instance) first</td></tr>
+      <tr><td><code>RequestLimitExceeded</code></td><td>API calls exceeding EC2 throttling limits</td><td>Add exponential backoff/retry to automation scripts</td></tr>
+      <tr><td>Health check failing (target group)</td><td>App not on expected port, or health path returns non-200</td><td>Fix SG rule or align health check path/port with the app</td></tr>
+      <tr><td><code>Address already in use</code> (OS-level)</td><td>Two processes trying to bind the same port</td><td><code>lsof -i :PORT</code> to find and stop the conflicting process</td></tr>
+    </table>
+  </section>
+
+  <!-- 16 -->
+  <section id="s16">
+    <div class="eyebrow">16</div>
+    <h2>Incident scenarios (act as production support)</h2>
+    <div class="incident"><h3 style="margin-top:0;">"Application suddenly stopped working."</h3><p style="font-size:13.5px;">Step 1 — confirm scope: one instance or the whole fleet? Step 2 — check ALB target health; if all unhealthy, it's likely a shared cause (bad deploy, dependency down) not per-instance. Step 3 — check recent deploys/changes via CloudTrail. Step 4 — check app logs for the exact exception. <strong>Why each step:</strong> scope-first prevents chasing a single-instance issue when it's actually a fleet-wide deploy regression.</p></div>
+    <div class="incident"><h3 style="margin-top:0;">"Users are receiving timeout errors."</h3><p style="font-size:13.5px;">Step 1 — differentiate connection timeout (network/SG) vs response timeout (app slow). Step 2 — check SG/NACL if connection-level. Step 3 — check CPU/DB latency if response-level. Step 4 — check ALB idle timeout setting vs app response time. <strong>Why:</strong> the fix is completely different depending on which timeout type it is — network vs app performance.</p></div>
+    <div class="incident"><h3 style="margin-top:0;">"Permission denied."</h3><p style="font-size:13.5px;">Step 1 — identify exactly which action failed from the error message/logs. Step 2 — check if it's an IAM issue (AWS API call) or a Linux filesystem permission issue. Step 3 — for IAM, use the policy simulator against the exact action+resource. Step 4 — for filesystem, check <code>ls -l</code> ownership. <strong>Why:</strong> "permission denied" is ambiguous until you know which layer it's coming from.</p></div>
+    <div class="incident"><h3 style="margin-top:0;">"Service running but users can't connect."</h3><p style="font-size:13.5px;">Step 1 — confirm app is actually listening (<code>ss -tulnp</code>). Step 2 — check SG allows the port from the client's source. Step 3 — check NACL isn't silently dropping return traffic. Step 4 — check route table has a path to the client. <strong>Why:</strong> "running" only proves the process exists — reachability is a separate, multi-layer question.</p></div>
+    <div class="incident"><h3 style="margin-top:0;">"Deployment failed."</h3><p style="font-size:13.5px;">Step 1 — check the deploy tool's own error output first. Step 2 — if it's a new AMI/launch template, check ASG activity history for the launch error. Step 3 — check user-data script exit codes via console output. Step 4 — roll back to the last known-good launch template version. <strong>Why:</strong> launch template versioning makes rollback a one-line change instead of a manual rebuild.</p></div>
+  </section>
+
+  <!-- 17 -->
+  <section id="s17">
+    <div class="eyebrow">17</div>
+    <h2>Cost optimization</h2>
+    <ul class="plain">
+      <li><strong>What causes cost:</strong> instance hours (by type), EBS storage + provisioned IOPS, data transfer (especially cross-AZ and to internet), Elastic IPs left unattached, snapshots retained indefinitely.</li>
+      <li><strong>Free tier:</strong> 750 hours/month of <code>t2.micro</code>/<code>t3.micro</code> for 12 months on new accounts — check current terms, as free tier offers change.</li>
+      <li><strong>Common expensive mistakes:</strong> oversized instances "just in case", forgotten dev/test instances left running, unattached EIPs, orphaned snapshots from terminated instances, On-Demand pricing for steady-state workloads that should be Reserved.</li>
+      <li><strong>Optimization techniques:</strong> right-size using actual CloudWatch utilization data (not guesses); Reserved Instances or Savings Plans for predictable baseline load; Spot for fault-tolerant/batch workloads; scheduled stop/start for dev/test; gp3 instead of gp2 (cheaper at equal performance); lifecycle policies to expire old snapshots.</li>
+      <li><strong>Tools:</strong> Cost Explorer for trend analysis and RI/Savings Plan recommendations, AWS Budgets for proactive alerting, Compute Optimizer for right-sizing recommendations based on real usage.</li>
+    </ul>
+    <div class="callout warn"><span class="lbl">Realistic example</span><p>A team running 10 <code>m5.2xlarge</code> instances 24/7 for a workload that's actually 20% utilized on average could cut cost by roughly half just by right-sizing to <code>m5.large</code> plus a Savings Plan — without any architecture change.</p></div>
+  </section>
+
+  <!-- 18 -->
+  <section id="s18">
+    <div class="eyebrow">18</div>
+    <h2>Automation</h2>
+
+    <h4 style="margin-top:0;">Bash — simple stop/start scheduler</h4>
+    <div class="codeblock"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># Stop all instances tagged Environment=dev outside business hours</span>
+IDS=$(aws ec2 describe-instances \
+  --filters <span class="s">"Name=tag:Environment,Values=dev"</span> <span class="s">"Name=instance-state-name,Values=running"</span> \
+  --query <span class="s">"Reservations[].Instances[].InstanceId"</span> --output text)
+<span class="k">if</span> [ -n <span class="s">"$IDS"</span> ]; <span class="k">then</span>
+  aws ec2 stop-instances --instance-ids $IDS
+<span class="k">fi</span></pre></div>
+
+    <h4>Python (boto3) — right-sizing report</h4>
+    <div class="codeblock"><pre><span class="k">import</span> boto3
+
+ec2 = boto3.client(<span class="s">"ec2"</span>)
+cw = boto3.client(<span class="s">"cloudwatch"</span>)
+
+instances = ec2.describe_instances(
+    Filters=[{<span class="s">"Name"</span>: <span class="s">"instance-state-name"</span>, <span class="s">"Values"</span>: [<span class="s">"running"</span>]}]
+)
+
+<span class="k">for</span> res <span class="k">in</span> instances[<span class="s">"Reservations"</span>]:
+    <span class="k">for</span> inst <span class="k">in</span> res[<span class="s">"Instances"</span>]:
+        iid = inst[<span class="s">"InstanceId"</span>]
+        <span class="c"># pull avg CPU over 14 days and flag chronically idle instances</span>
+        <span class="k">print</span>(iid, inst[<span class="s">"InstanceType"</span>])</pre></div>
+
+    <h4>Terraform — launch template + ASG</h4>
+    <div class="codeblock"><pre><span class="k">resource</span> <span class="s">"aws_launch_template"</span> <span class="s">"web"</span> {
+  name_prefix   = <span class="s">"prod-web-"</span>
+  image_id      = var.golden_ami_id
+  instance_type = <span class="s">"m6i.large"</span>
+
+  iam_instance_profile { name = aws_iam_instance_profile.web.name }
+
+  metadata_options {
+    http_tokens = <span class="s">"required"</span>   <span class="c"># enforce IMDSv2</span>
+  }
+
+  block_device_mappings {
+    device_name = <span class="s">"/dev/xvda"</span>
+    ebs { encrypted = <span class="k">true</span>; volume_type = <span class="s">"gp3"</span> }
+  }
+}
+
+<span class="k">resource</span> <span class="s">"aws_autoscaling_group"</span> <span class="s">"web"</span> {
+  min_size            = 2
+  max_size            = 10
+  desired_capacity    = 2
+  vpc_zone_identifier = var.private_subnet_ids
+  target_group_arns   = [aws_lb_target_group.web.arn]
+
+  launch_template {
+    id      = aws_launch_template.web.id
+    version = <span class="s">"$Latest"</span>
+  }
+}</pre></div>
+    <p style="font-size:13px;">Each block above maps directly to a Console step from Section 5 — IaC just makes it reviewable, repeatable, and version-controlled instead of a one-time click sequence.</p>
+  </section>
+
+  <!-- 19 -->
+  <section id="s19">
+    <div class="eyebrow">19</div>
+    <h2>DevOps / CI-CD integration</h2>
+    <div class="ascii">Developer
+  │  git push
+  ▼
+GitHub
+  │  webhook
+  ▼
+Jenkins / GitHub Actions
+  │  build + unit test
+  ▼
+Docker build & push to ECR
+  │
+  ▼
+Terraform apply
+  │  updates Launch Template version
+  ▼
+Auto Scaling Group
+  │  rolling instance refresh
+  ▼
+EC2 fleet (new version)
+  │
+  ▼
+CloudWatch / alarms confirm healthy rollout</div>
+    <p style="font-size:13.5px;">EC2 integrates with CI/CD primarily through <strong>launch template versioning</strong> and <strong>Instance Refresh</strong>: a pipeline builds a new AMI (or just updates app code baked into user-data), publishes a new launch template version, and triggers an ASG Instance Refresh that replaces instances gradually while respecting a minimum healthy percentage — giving you a rolling deployment with automatic rollback if health checks fail mid-rollout.</p>
+  </section>
+
+  <!-- 20 -->
+  <section id="s20">
+    <div class="eyebrow">20</div>
+    <h2>High availability & disaster recovery</h2>
+    <table>
+      <tr><th>Design</th><th>Description</th><th>RTO</th><th>RPO</th></tr>
+      <tr><td class="strong">Single-AZ</td><td>One instance, one AZ — no resilience to AZ failure</td><td>Hours (manual rebuild)</td><td>Since last snapshot</td></tr>
+      <tr><td class="strong">Multi-AZ</td><td>ASG + ALB across ≥2 AZs — standard production baseline</td><td>Minutes (auto-replace)</td><td>Near-zero (stateless tier)</td></tr>
+      <tr><td class="strong">Multi-region warm standby</td><td>Minimal running capacity in a second region, scaled up on failover</td><td>Minutes</td><td>Depends on data replication lag</td></tr>
+      <tr><td class="strong">Multi-region active-active</td><td>Full capacity live in both regions simultaneously</td><td>Near-zero</td><td>Near-zero</td></tr>
+    </table>
+    <p style="font-size:13.5px;"><strong>Backup:</strong> automated EBS snapshot lifecycle (Data Lifecycle Manager) with a retention policy; AMIs rebuilt/copied cross-region regularly. <strong>Restore:</strong> launch new instances from the latest AMI/snapshot into the target AZ/region. <strong>Failover:</strong> Route 53 health-check-based DNS failover, or ASG scale-up in a standby region triggered by an automation runbook or EventBridge rule.</p>
+  </section>
+
+  <!-- 21 -->
+  <section id="s21">
+    <div class="eyebrow">21</div>
+    <h2>Knowledge check</h2>
+    <p>Attempt each level before checking the answer key below it.</p>
+
+    <h3>Level 1 — Beginner</h3>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px; margin-bottom:16px;">
+      <li>What does AMI stand for and what does it contain?</li>
+      <li>What's the difference between stopping and terminating an instance?</li>
+      <li>Does EBS storage survive an instance stop?</li>
+      <li>What is a security group?</li>
+      <li>Why do you need a key pair?</li>
+    </ol>
+    <h3>Level 2 — Intermediate</h3>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px; margin-bottom:16px;">
+      <li>What's the difference between a Security Group and a NACL?</li>
+      <li>What is an instance profile and why is it preferred over hardcoded keys?</li>
+      <li>What happens to instance-store data on stop vs reboot?</li>
+      <li>What is a launch template used for?</li>
+      <li>Why might a t3 instance suddenly slow down under sustained load?</li>
+    </ol>
+    <h3>Level 3 — Advanced</h3>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px; margin-bottom:16px;">
+      <li>Explain the difference between cluster, spread, and partition placement groups.</li>
+      <li>How does IMDSv2 protect against SSRF-based credential theft?</li>
+      <li>What's the tradeoff between Spot and On-Demand for a stateful service?</li>
+      <li>How does an ASG decide which instance to terminate during scale-in?</li>
+      <li>What's the difference between gp3 and io2 volumes?</li>
+    </ol>
+    <h3>Level 4 — Production</h3>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px; margin-bottom:16px;">
+      <li>How would you roll out a security patch across 200 instances with zero downtime?</li>
+      <li>How do you prevent secrets from leaking via user-data?</li>
+      <li>Design a cost-optimized fleet mixing Reserved, Spot, and On-Demand.</li>
+      <li>How would you enforce that no instance is ever launched without encryption?</li>
+      <li>What's your approach to golden AMI lifecycle management?</li>
+    </ol>
+    <h3>Level 5 — Troubleshooting</h3>
+    <ol style="padding-left:20px; color:var(--muted); font-size:13.5px; margin-bottom:24px;">
+      <li>ALB shows 0 healthy targets — what's your first check?</li>
+      <li>An instance is running but SSH times out — narrow down the cause.</li>
+      <li>ASG won't scale past 2 instances despite max being 10 — what do you check?</li>
+      <li>CloudWatch shows no memory metrics at all — why?</li>
+      <li>Costs tripled overnight with no code changes — where do you look first?</li>
+    </ol>
+
+    <details class="qa"><summary><span class="qnum">Key</span>Answer key — click to expand all<span class="chev">▸</span></summary>
+    <div class="a">
+      <p><strong>L1:</strong> (1) Amazon Machine Image — a bootable template with OS + optional pre-installed software. (2) Stop preserves the EBS root volume and instance ID, billing pauses for compute; terminate destroys the instance permanently (and instance-store data). (3) Yes, EBS is independent of the instance lifecycle unless "delete on termination" is set. (4) A stateful, instance-level virtual firewall. (5) To securely SSH into a Linux instance without a password.</p>
+      <p><strong>L2:</strong> (1) SG is stateful/instance-level/allow-only; NACL is stateless/subnet-level/allow+deny. (2) A wrapper around an IAM role attached to the instance so apps get auto-rotating temporary credentials instead of static keys. (3) Instance-store data is lost on both stop and terminate (and any underlying hardware failure) — it only survives a reboot. (4) A reusable, versioned instance configuration template used by ASGs and repeatable launches. (5) It exhausted its CPU credit balance — burstable instances throttle once credits run out.</p>
+      <p><strong>L3:</strong> (1) Cluster = same rack for low latency; spread = max 7 per rack for fault isolation; partition = grouped racks for distributed systems needing both. (2) IMDSv2 requires a session token obtained via a PUT request, which most naive SSRF vectors (that only do GET) can't replicate. (3) Spot can be reclaimed with 2-minute notice — unsuitable for stateful services unless the state is externalized/replicated elsewhere. (4) By default, oldest launch configuration/most instances in the AZ with the most capacity, but this is configurable via termination policies. (5) gp3 has baseline performance decoupled from size and is cheaper; io2 offers higher, more consistent IOPS for latency-sensitive databases.</p>
+      <p><strong>L4:</strong> (1) Rolling ASG Instance Refresh with a minimum healthy percentage, driven by a new launch template version from a patched golden AMI. (2) Never put secrets in user-data plaintext — pull them from Secrets Manager/Parameter Store at boot using the instance role. (3) Reserved/Savings Plan for the always-on baseline, Spot for elastic/fault-tolerant burst, On-Demand only as a fallback when Spot capacity is unavailable. (4) Enable EBS encryption by default account-wide and add an AWS Config rule denying unencrypted volume creation. (5) Scheduled rebuilds via EC2 Image Builder pipeline, old AMI versions deprecated and eventually deregistered with their snapshots cleaned up.</p>
+      <p><strong>L5:</strong> (1) Target group health check configuration and the SG rule allowing the ALB to reach the health check port. (2) Check SG rules for your IP, then NACL, then whether the instance actually has a public IP/correct route — narrow layer by layer. (3) Check ASG activity history for the specific launch failure (quota, capacity, bad AMI) — desired capacity alone doesn't tell you why it's not being met. (4) Memory isn't a default EC2 metric — it requires the CloudWatch agent installed and configured. (5) Cost Explorer filtered by service and tag, cross-referenced with CloudTrail for any new resources launched — check for ASG runaway scaling or forgotten instances first.</p>
+    </div>
+    </details>
+  </section>
+
+  <!-- 22 -->
+  <section id="s22">
+    <div class="eyebrow">22</div>
+    <h2>Interview questions</h2>
+
+    <h3>Basic</h3>
+    <details class="qa"><summary><span class="qnum">B1</span>What is EC2 and why would you use it over on-premises servers?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> fundamental understanding of cloud value prop</div><p><strong>Strong answer:</strong> explains on-demand provisioning, elimination of hardware procurement lead time, pay-per-use billing, and elasticity, with a concrete example. <strong>Weak answer:</strong> "it's a virtual server in the cloud" with no reasoning about why that matters. <strong>Follow-up:</strong> "When would on-prem still make sense?" <strong>Best approach:</strong> ground the answer in a cost/agility tradeoff, not just a definition.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">B2</span>What's the difference between stopping and terminating an instance?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> lifecycle understanding</div><p><strong>Strong answer:</strong> stop preserves EBS root volume and instance ID (billing pauses for compute, EBS still billed); terminate deletes the instance and, by default, the root volume unless "delete on termination" is unchecked. <strong>Weak answer:</strong> "stop turns it off, terminate deletes it" with no mention of storage implications. <strong>Follow-up:</strong> "What happens to a non-root EBS volume on terminate?" (By default it's preserved unless explicitly set to delete.)</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">B3</span>What is an AMI?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> core vocabulary</div><p><strong>Strong answer:</strong> a template containing the OS, launch permissions, and a block device mapping, used to launch identical instances repeatedly; mentions golden AMI patterns. <strong>Weak answer:</strong> "it's the OS image." <strong>Follow-up:</strong> "How do you keep AMIs patched across a large fleet?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">B4</span>What's a security group?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> networking basics</div><p><strong>Strong answer:</strong> stateful, instance-level virtual firewall, allow-rules only, return traffic automatically permitted. <strong>Weak answer:</strong> "it controls access" without mentioning statefulness. <strong>Follow-up:</strong> "SG vs NACL?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">B5</span>What instance families would you use for a CPU-bound batch job vs an in-memory cache?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> practical instance-type knowledge</div><p><strong>Strong answer:</strong> compute-optimized (c-family) for the batch job; memory-optimized (r-family) for the cache. <strong>Weak answer:</strong> picks a general-purpose type for both without reasoning. <strong>Follow-up:</strong> "Why not just use the biggest general-purpose instance for everything?"</p></div></details>
+
+    <h3>Intermediate</h3>
+    <details class="qa"><summary><span class="qnum">I1</span>How does an EC2 instance get temporary AWS credentials without hardcoding keys?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> IAM + IMDS understanding</div><p><strong>Strong answer:</strong> instance profile wraps an IAM role; IMDS exposes STS-issued temporary credentials that the SDK's default credential chain picks up automatically, rotated continuously. <strong>Weak answer:</strong> "it uses IAM roles" with no mention of IMDS or STS. <strong>Follow-up:</strong> "What's the security risk of IMDSv1 and how does IMDSv2 fix it?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I2</span>Explain the difference between EBS and instance store.<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> storage architecture</div><p><strong>Strong answer:</strong> EBS is network-attached, persistent, AZ-locked, independent lifecycle from the instance; instance store is physically attached local disk, ephemeral, lost on stop/terminate/hardware failure, but higher raw IOPS. <strong>Weak answer:</strong> "EBS is persistent, instance store isn't" with no explanation of why or when to use each. <strong>Follow-up:</strong> "When would you actually choose instance store in production?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I3</span>How does Auto Scaling decide when to add or remove instances?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> ASG mechanics</div><p><strong>Strong answer:</strong> scaling policies (target tracking, step, simple) evaluate CloudWatch metrics against thresholds, with cooldown periods to prevent flapping; describes target-tracking as the most common production pattern. <strong>Weak answer:</strong> "it scales based on CPU" with no mention of policy types or cooldowns. <strong>Follow-up:</strong> "Your ASG is flapping — what would you change?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I4</span>What's the shared responsibility model as it applies to EC2?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> security ownership boundaries</div><p><strong>Strong answer:</strong> AWS secures the physical infrastructure, hypervisor, and host; you're responsible for the guest OS, patching, application security, network configuration (SGs/NACLs), and IAM. <strong>Weak answer:</strong> "AWS handles security" without distinguishing layers. <strong>Follow-up:</strong> "Who's responsible for OS-level CVE patching?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I5</span>How would you achieve zero-downtime deployment on EC2?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> deployment strategy</div><p><strong>Strong answer:</strong> rolling ASG Instance Refresh with a minimum healthy percentage, or blue/green with two ASGs and weighted target groups behind one ALB. <strong>Weak answer:</strong> "just deploy and restart the app" — implies downtime. <strong>Follow-up:</strong> "How do you roll back mid-deployment if error rates spike?"</p></div></details>
+
+    <h3>Advanced</h3>
+    <details class="qa"><summary><span class="qnum">A1</span>Design a highly available, cost-optimized EC2 architecture for a web application with unpredictable traffic.<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> end-to-end architecture skill</div><p><strong>Strong answer:</strong> ALB across ≥2 AZs → ASG with target-tracking scaling, mixed instance policy (Reserved baseline + Spot burst), private subnets, golden AMI + launch template versioning, CloudWatch alarms, RDS Multi-AZ backend. <strong>Weak answer:</strong> a single large instance "sized for peak." <strong>Follow-up:</strong> "How do you handle Spot interruptions gracefully mid-request?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">A2</span>How would you prevent SSRF attacks from exfiltrating an instance's IAM credentials?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> deep security knowledge, real incident awareness</div><p><strong>Strong answer:</strong> enforce IMDSv2 (token-required) fleet-wide, since it requires a PUT request most SSRF vectors can't replicate; references the Capital One breach as the canonical case study. <strong>Weak answer:</strong> "use a firewall" with no mention of IMDSv2 specifically. <strong>Follow-up:</strong> "What would break if you enforced this fleet-wide today?"</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">A3</span>Explain placement groups and when each strategy is appropriate.<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> low-level infra knowledge</div><p><strong>Strong answer:</strong> cluster for HPC/tightly-coupled low-latency workloads (same rack, single point of failure risk); spread for small numbers of critical instances needing hardware isolation; partition for large distributed systems (Cassandra, Kafka, HDFS) needing both scale and rack-awareness. <strong>Weak answer:</strong> can name the three but not when to use each. <strong>Follow-up:</strong> "What's the failure blast radius difference between cluster and spread?"</p></div></details>
+
+    <h3>Scenario-based (STAR-style)</h3>
+    <details class="qa"><summary><span class="qnum">S1</span>"Tell me about a time you diagnosed a production EC2 performance issue."<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> real troubleshooting experience</div><p><strong>Strong answer (STAR):</strong> <em>Situation</em> — latency spiked on a t3-family fleet during a traffic surge. <em>Task</em> — restore performance without overspending. <em>Action</em> — checked CPUCreditBalance, found it near zero, moved the fleet to <code>m6i</code> and added target-tracking scaling. <em>Result</em> — latency returned to baseline and stayed stable through the next surge. <strong>Weak answer:</strong> vague "we looked at the logs and fixed it" with no specific metric or root cause. <strong>Follow-up:</strong> "How did you prevent recurrence?"</p></div></details>
+
+    <h3>Troubleshooting</h3>
+    <details class="qa"><summary><span class="qnum">T1</span>An ASG keeps launching and immediately terminating instances. Walk me through your diagnosis.<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> methodical debugging</div><p><strong>Strong answer:</strong> check ASG activity history for the termination reason first (often failed health checks); check target group health check config vs the app's actual port/path; check console output/user-data logs for a boot-time script failure. <strong>Weak answer:</strong> jumps straight to "restart everything." <strong>Follow-up:</strong> "What if console output shows the instance booted fine but still gets terminated?" (Likely a health check misconfiguration, not a boot failure.)</p></div></details>
+
+    <h3>Production</h3>
+    <details class="qa"><summary><span class="qnum">P1</span>How do you patch 500 production EC2 instances without downtime or manual SSH?<span class="chev">▸</span></summary>
+    <div class="a"><div class="meta"><b>Tests:</b> fleet-scale operational maturity</div><p><strong>Strong answer:</strong> SSM Patch Manager with a defined maintenance window, or a golden-AMI rebuild pipeline paired with rolling ASG Instance Refresh — no SSH required either way. <strong>Weak answer:</strong> "SSH into each one and run yum update." <strong>Follow-up:</strong> "How do you handle instances that fail to patch?"</p></div></details>
+  </section>
+
+  <!-- 23 -->
+  <section id="s23">
+    <div class="eyebrow">23</div>
+    <h2>Interview rapid fire</h2>
+    <div class="rf-grid">
+      <div class="rf-item"><div class="q">What is EC2?</div><div class="a">On-demand virtual server compute in AWS.</div></div>
+      <div class="rf-item"><div class="q">Why EC2 over Lambda?</div><div class="a">Long-running, stateful, or full-OS-control workloads.</div></div>
+      <div class="rf-item"><div class="q">When would you NOT use EC2?</div><div class="a">Short bursty tasks better suited to Lambda; fully managed needs.</div></div>
+      <div class="rf-item"><div class="q">EC2 vs Lambda?</div><div class="a">Server you manage vs fully managed, event-driven, no server.</div></div>
+      <div class="rf-item"><div class="q">How do you troubleshoot an unreachable instance?</div><div class="a">Status checks → console output → SG/NACL → route table.</div></div>
+      <div class="rf-item"><div class="q">What happens internally on launch?</div><div class="a">Control plane validates → placement engine schedules → Nitro boots VM → ENI/EBS attached.</div></div>
+      <div class="rf-item"><div class="q">Production best practice for SSH?</div><div class="a">Don't — use SSM Session Manager instead.</div></div>
+      <div class="rf-item"><div class="q">What is a launch template?</div><div class="a">Versioned, reusable instance launch configuration.</div></div>
+      <div class="rf-item"><div class="q">gp3 vs gp2?</div><div class="a">gp3 has baseline performance independent of size, cheaper.</div></div>
+      <div class="rf-item"><div class="q">What is IMDSv2 for?</div><div class="a">Token-required metadata access, blocks basic SSRF credential theft.</div></div>
+      <div class="rf-item"><div class="q">Spot vs On-Demand?</div><div class="a">Spot is cheaper but reclaimable with 2-min notice; On-Demand is guaranteed.</div></div>
+      <div class="rf-item"><div class="q">What's an instance profile?</div><div class="a">Wrapper attaching an IAM role to an EC2 instance.</div></div>
+      <div class="rf-item"><div class="q">SG vs NACL?</div><div class="a">SG stateful/instance-level; NACL stateless/subnet-level.</div></div>
+      <div class="rf-item"><div class="q">What causes CPU credit exhaustion?</div><div class="a">Sustained load on a burstable (t-family) instance.</div></div>
+      <div class="rf-item"><div class="q">How do you patch instances at scale?</div><div class="a">SSM Patch Manager or golden AMI + rolling refresh.</div></div>
+      <div class="rf-item"><div class="q">What's a placement group?</div><div class="a">Controls physical proximity of instances for latency or fault isolation.</div></div>
+      <div class="rf-item"><div class="q">Why avoid public IPs on app instances?</div><div class="a">Reduces attack surface — access only via load balancer.</div></div>
+      <div class="rf-item"><div class="q">What's Auto Scaling's role?</div><div class="a">Maintains desired capacity automatically based on metrics.</div></div>
+      <div class="rf-item"><div class="q">Where do memory metrics come from?</div><div class="a">CloudWatch agent — not a default metric.</div></div>
+      <div class="rf-item"><div class="q">What's a Dedicated Host for?</div><div class="a">Physical isolation for compliance/licensing needs.</div></div>
+      <div class="rf-item"><div class="q">Root volume encryption default?</div><div class="a">Off unless you enable EBS encryption by default at the account level.</div></div>
+      <div class="rf-item"><div class="q">What's user-data used for?</div><div class="a">Bootstrap script executed by cloud-init on first boot.</div></div>
+      <div class="rf-item"><div class="q">How is EC2 billed?</div><div class="a">Per-second, by instance type/size, plus storage and data transfer.</div></div>
+      <div class="rf-item"><div class="q">What's a Reserved Instance?</div><div class="a">Committed-use discount for predictable, steady-state workloads.</div></div>
+      <div class="rf-item"><div class="q">Multi-AZ vs Multi-region?</div><div class="a">AZ protects against a datacenter failure; region against a regional outage.</div></div>
+      <div class="rf-item"><div class="q">What does a status check failure mean?</div><div class="a">System = host/hardware issue; Instance = OS-level issue.</div></div>
+      <div class="rf-item"><div class="q">How do you avoid hardcoded credentials?</div><div class="a">Attach an IAM role via instance profile; use IMDS-issued temp creds.</div></div>
+      <div class="rf-item"><div class="q">What's ENA?</div><div class="a">Enhanced networking driver for higher throughput/lower latency.</div></div>
+      <div class="rf-item"><div class="q">Blue/green vs rolling deploy?</div><div class="a">Blue/green swaps entire environments; rolling replaces incrementally.</div></div>
+      <div class="rf-item"><div class="q">What's the first troubleshooting step, always?</div><div class="a">Identify and scope the exact symptom before touching anything.</div></div>
+    </div>
+  </section>
+
+  <!-- 24 -->
+  <section id="s24">
+    <div class="eyebrow">24</div>
+    <h2>X vs Y comparisons</h2>
+    <table>
+      <tr><th>Feature</th><th>EC2</th><th>Lambda</th><th>When to use</th></tr>
+      <tr><td class="strong">Execution model</td><td>Always-on (or on-demand) VM</td><td>Event-driven, short-lived function</td><td>Long-running/stateful → EC2; bursty/event-driven → Lambda</td></tr>
+      <tr><td class="strong">Max runtime</td><td>Unlimited</td><td>15 minutes</td><td>Long batch jobs → EC2</td></tr>
+      <tr><td class="strong">OS control</td><td>Full root access</td><td>None</td><td>Custom kernel/runtime needs → EC2</td></tr>
+      <tr><td class="strong">Cost model</td><td>Pay while running</td><td>Pay per invocation/duration</td><td>Idle-heavy workloads → Lambda</td></tr>
+    </table>
+    <table>
+      <tr><th>Feature</th><th>EC2</th><th>ECS/EKS on Fargate</th><th>When to use</th></tr>
+      <tr><td class="strong">Server management</td><td>You manage instances</td><td>AWS manages the compute</td><td>Want container orchestration without patching hosts → Fargate</td></tr>
+      <tr><td class="strong">Cost at scale</td><td>Often cheaper for steady, high-density workloads</td><td>Premium for the no-ops convenience</td><td>Large steady-state fleets → EC2 (with ECS on EC2 if containerized)</td></tr>
+    </table>
+    <table>
+      <tr><th>Feature</th><th>EBS</th><th>Instance Store</th><th>When to use</th></tr>
+      <tr><td class="strong">Persistence</td><td>Survives stop/terminate (if configured)</td><td>Lost on stop/terminate</td><td>Any data you must keep → EBS</td></tr>
+      <tr><td class="strong">Performance</td><td>Network-attached, good but bounded</td><td>Physically local, very high IOPS</td><td>Disposable cache/scratch data → Instance Store</td></tr>
+    </table>
+    <table>
+      <tr><th>Feature</th><th>On-Demand</th><th>Reserved/Savings Plan</th><th>Spot</th><th>When to use</th></tr>
+      <tr><td class="strong">Price</td><td>Highest</td><td>Up to ~72% off</td><td>Up to ~90% off</td><td>Match to workload predictability and interruption tolerance</td></tr>
+      <tr><td class="strong">Commitment</td><td>None</td><td>1 or 3 years</td><td>None, but reclaimable</td><td>Steady baseline → Reserved; elastic burst → Spot; unpredictable short-term → On-Demand</td></tr>
+    </table>
+  </section>
+
+  <!-- 25 -->
+  <section id="s25">
+    <div class="eyebrow">25</div>
+    <h2>Production checklist</h2>
+    <ul class="checklist">
+      <li><strong>Security:</strong> No SG open to 0.0.0.0/0 on mgmt ports</li>
+      <li><strong>IAM:</strong> Least-privilege instance profile per tier</li>
+      <li><strong>Networking:</strong> App instances in private subnets</li>
+      <li><strong>Encryption:</strong> EBS encryption enabled by default</li>
+      <li><strong>Monitoring:</strong> CloudWatch agent + custom metrics installed</li>
+      <li><strong>Logging:</strong> CloudTrail + VPC Flow Logs centralized</li>
+      <li><strong>Backup:</strong> Snapshot lifecycle policy configured</li>
+      <li><strong>Scaling:</strong> ASG with target-tracking policy</li>
+      <li><strong>Availability:</strong> ≥2 AZs, min capacity ≥2</li>
+      <li><strong>DR:</strong> Cross-region AMI copy and tested restore</li>
+      <li><strong>Cost:</strong> Right-sized, RI/Savings Plan baseline in place</li>
+      <li><strong>Automation:</strong> Infrastructure defined and applied via IaC</li>
+      <li><strong>Access:</strong> SSM Session Manager, no standing SSH</li>
+      <li><strong>Patching:</strong> Scheduled via SSM Patch Manager or AMI pipeline</li>
+      <li><strong>Alarms:</strong> CPU, memory, disk, status checks all alarmed</li>
+      <li><strong>Documentation:</strong> Runbooks for common incidents exist</li>
+      <li><strong>Tagging:</strong> Consistent tags for cost/ownership attribution</li>
+      <li><strong>Termination protection:</strong> Enabled for genuinely stateful instances</li>
+    </ul>
+  </section>
+
+  <!-- 26 -->
+  <section id="s26">
+    <div class="eyebrow">26</div>
+    <h2>Troubleshooting cheat sheet</h2>
+    <div class="card">
+      <h4 style="margin-top:0;">First checks (in order)</h4>
+      <p style="font-size:13.5px;">1. Scope the symptom → 2. Service Health Dashboard → 3. <code>describe-instance-status</code> → 4. SG/NACL → 5. logs → 6. CloudWatch metrics → 7. recent changes</p>
+      <h4>Key commands</h4>
+      <p style="font-size:13.5px;"><code>aws ec2 describe-instance-status</code> · <code>aws ec2 get-console-output</code> · <code>aws ec2 describe-security-groups</code> · <code>ss -tulnp</code> · <code>journalctl -u app -f</code> · <code>df -h</code> · <code>free -h</code> · <code>dmesg | tail</code></p>
+      <h4>Key logs</h4>
+      <p style="font-size:13.5px;">EC2 console output (boot log) · <code>/var/log/cloud-init-output.log</code> (user-data execution) · CloudTrail (who did what) · VPC Flow Logs (network path) · application logs</p>
+      <h4>Key metrics</h4>
+      <p style="font-size:13.5px;"><code>CPUUtilization</code> · <code>CPUCreditBalance</code> · <code>StatusCheckFailed_System/Instance</code> · <code>NetworkIn/Out</code> · custom <code>mem_used_percent</code></p>
+      <h4>Common fixes</h4>
+      <p style="font-size:13.5px;">Fix SG rule → correct route table → reboot for stuck OS → detach/reattach volume for filesystem repair → roll back launch template version → scale ASG manually as an immediate mitigation</p>
+      <h4>Useful console locations</h4>
+      <p style="font-size:13.5px;">EC2 → Instances → Status Checks tab · EC2 → Auto Scaling Groups → Activity tab · EC2 → Target Groups → Health tab · CloudWatch → Alarms · CloudTrail → Event history</p>
+    </div>
+  </section>
+
+  <!-- 27 -->
+  <section id="s27">
+    <div class="eyebrow">27</div>
+    <h2>Interview cheat sheet — final revision</h2>
+    <div class="card">
+      <h4 style="margin-top:0;">Core concepts to have cold</h4>
+      <p style="font-size:13.5px;">AMI · instance types/families · EBS vs instance store · security groups vs NACLs · IAM instance profiles + IMDSv2 · launch templates · Auto Scaling Groups · placement groups · Spot vs Reserved vs On-Demand</p>
+      <h4>Architecture points that impress</h4>
+      <p style="font-size:13.5px;">A single instance is never HA by itself — HA is an architectural choice (multi-AZ ASG + ALB); shared responsibility model splits host security (AWS) from OS/app security (you); IMDSv2 closes a real-world SSRF vulnerability class (cite Capital One).</p>
+      <h4>Differences to nail</h4>
+      <p style="font-size:13.5px;">SG (stateful/instance) vs NACL (stateless/subnet) · EC2 vs Lambda (control vs convenience) · gp3 vs io2 (cost vs consistent IOPS) · Stop vs Terminate (billing + storage implications)</p>
+      <h4>Top production scenarios to have a story for</h4>
+      <p style="font-size:13.5px;">Zero-downtime patching at scale · diagnosing a latency spike · designing HA + cost-optimized architecture · handling a Spot interruption gracefully · locking down SSH via SSM</p>
+      <h4>Top troubleshooting steps to recite fluently</h4>
+      <p style="font-size:13.5px;">Scope symptom → status checks → SG/NACL → logs → metrics → recent changes → reproduce → fix → validate → document</p>
+      <h4>Top mistakes to avoid mentioning you've made (or to flag as anti-patterns)</h4>
+      <p style="font-size:13.5px;">SSH open to 0.0.0.0/0 · hardcoded credentials in user-data · IMDSv1 left enabled · single-AZ "production" deployment · no snapshot/backup strategy · guessing instance size instead of measuring</p>
+    </div>
+  </section>
+
+  <!-- 28 -->
+  <section id="s28">
+    <div class="eyebrow">28</div>
+    <h2>Learning path</h2>
+    <div class="card">
+      <div class="daybox"><div class="d">Day 1</div><div class="c"><p><strong>Study:</strong> Sections 1–4 (fundamentals, core concepts, architecture, terms).</p><p><strong>Practice:</strong> Lab 1 — launch and connect to your first instance.</p><p><strong>Remember:</strong> the launch → boot → connect flow, and what an AMI actually is.</p></div></div>
+      <div class="daybox"><div class="d">Day 2</div><div class="c"><p><strong>Study:</strong> Section 5–6 (Console + CLI).</p><p><strong>Practice:</strong> Lab 2 — instance behind a load balancer.</p><p><strong>Remember:</strong> SG vs NACL, and the core CLI commands for describe/launch/stop/terminate.</p></div></div>
+      <div class="daybox"><div class="d">Day 3</div><div class="c"><p><strong>Study:</strong> Section 7–8 (Linux commands, use cases).</p><p><strong>Practice:</strong> Lab 3 — Auto Scaling Group with a launch template.</p><p><strong>Remember:</strong> the ASG self-healing behavior and how target tracking works.</p></div></div>
+      <div class="daybox"><div class="d">Day 4</div><div class="c"><p><strong>Study:</strong> Section 11–12 (Security, networking).</p><p><strong>Practice:</strong> Lab 5 — harden an instance (IMDSv2, private subnet, SSM).</p><p><strong>Remember:</strong> the full traffic path from IGW to instance, and why IMDSv2 matters.</p></div></div>
+      <div class="daybox"><div class="d">Day 5</div><div class="c"><p><strong>Study:</strong> Section 13–16 (Monitoring, troubleshooting, errors, incidents).</p><p><strong>Practice:</strong> Lab 6 — CloudWatch alarms; deliberately break something and diagnose it.</p><p><strong>Remember:</strong> the 14-step troubleshooting order, and the difference between system vs instance status checks.</p></div></div>
+      <div class="daybox"><div class="d">Day 6</div><div class="c"><p><strong>Study:</strong> Section 17–20 (Cost, automation, CI/CD, HA/DR).</p><p><strong>Practice:</strong> Lab 7 — Terraform-managed ASG.</p><p><strong>Remember:</strong> Spot vs Reserved tradeoffs, and how launch template versioning enables rolling deploys.</p></div></div>
+      <div class="daybox"><div class="d">Day 7</div><div class="c"><p><strong>Study:</strong> Section 21 (knowledge check) — attempt every level honestly before checking answers.</p><p><strong>Practice:</strong> Lab 8 and 9 — failure simulation and the full 3-tier build.</p><p><strong>Remember:</strong> the beginner-vs-production comparison table cold.</p></div></div>
+      <div class="daybox"><div class="d">Day 8+</div><div class="c"><p><strong>Study:</strong> Sections 22–27 (interview prep) — do a mock interview out loud, not just silent reading.</p><p><strong>Practice:</strong> explain 3 architecture decisions to a rubber duck without notes.</p><p><strong>Remember:</strong> the rapid-fire section until every answer is instant.</p></div></div>
+    </div>
+
+    <h3>Mastery roadmap</h3>
+    <div class="pillbar">
+      <span class="pill on">Beginner</span><span class="pill">→</span>
+      <span class="pill on">Intermediate</span><span class="pill">→</span>
+      <span class="pill on">Advanced</span><span class="pill">→</span>
+      <span class="pill on">Production</span><span class="pill">→</span>
+      <span class="pill on">Interview-ready</span>
+    </div>
+    <p style="font-size:13.5px;">You know you've reached each stage when: <strong>Beginner</strong> — you can launch, connect, and terminate an instance confidently. <strong>Intermediate</strong> — you can explain SG/NACL/IAM roles without hesitation and set up an ASG behind an ALB. <strong>Advanced</strong> — you can design a multi-AZ, cost-optimized, secure architecture from a blank page. <strong>Production</strong> — you have real automation (IaC), monitoring, and a tested DR plan, not just a working demo. <strong>Interview-ready</strong> — you can answer any question in Sections 22–23 out loud, in under 60 seconds, with a concrete example.</p>
+  </section>
+
+</div>
+
+<footer>AWS EC2 Mastery Guide · reference document · verify current instance types, pricing, and API syntax against official AWS documentation, as these change over time</footer>
+
+</main>
+
+</body>
+</html>

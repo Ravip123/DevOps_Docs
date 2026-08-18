@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git & GitHub — Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0C10; --panel:#121317; --panel-2:#0D0E12; --line:#242630;
+    --text:#ECEDF2; --muted:#9A9DAC; --dim:#5D6070;
+    --orange:#FF6B4A; --orange-dim:#7A2E1E; --violet:#A98CF5; --violet-dim:#3D2E66;
+    --red:#F0555F; --green:#5FD97D; --teal:#2FD9C5; --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 88% -8%, rgba(169,140,245,0.08), transparent 60%),
+      radial-gradient(1000px 500px at -10% 18%, rgba(255,107,74,0.07), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Inter', sans-serif; line-height:1.65; display:flex; min-height:100vh;
+  }
+  code,.mono{ font-family:'JetBrains Mono', monospace; }
+  ::selection{ background:var(--violet-dim); color:#fff; }
+
+  nav.sidebar{ width:250px; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto; padding:26px 18px; background:var(--panel-2); border-right:1px solid var(--line); }
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .brand .dot{ width:10px; height:10px; border-radius:3px; background:var(--orange); box-shadow:0 0 12px rgba(255,107,74,0.6); }
+  .brand span{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
+  .brand-sub{ font-size:10.5px; color:var(--dim); margin:0 0 22px 20px; text-transform:uppercase; letter-spacing:0.08em; }
+  .navlist{ list-style:none; }
+  .navlist li{ margin-bottom:1px; }
+  .navlist a{ display:block; color:var(--muted); text-decoration:none; font-size:12.5px; padding:5px 9px; border-radius:5px; border-left:2px solid transparent; transition:.15s; }
+  .navlist a:hover{ color:var(--text); background:rgba(255,255,255,.03); border-left-color:var(--violet); }
+
+  main{ flex:1; min-width:0; }
+  .wrap{ max-width:960px; margin:0 auto; padding:60px 46px 120px; }
+  section{ scroll-margin-top:20px; margin-bottom:76px; }
+
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .eyebrow::before{ content:""; width:16px; height:1px; background:var(--violet); }
+  h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; line-height:1.1; letter-spacing:-0.01em; margin-bottom:16px; }
+  h2{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; margin-bottom:14px; }
+  h3{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16.5px; margin:22px 0 8px; }
+  h4{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--orange); margin:16px 0 6px; }
+  p{ color:var(--muted); font-size:14.5px; margin-bottom:12px; max-width:74ch; }
+  p strong,li strong{ color:var(--text); font-weight:600; }
+  .lede{ font-size:16.5px; max-width:64ch; }
+
+  .tag{ font-family:'JetBrains Mono',monospace; font-size:11px; padding:5px 10px; border-radius:100px; border:1px solid var(--line); color:var(--muted); background:var(--panel); }
+  .hero-tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
+
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:14px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:800px){ .grid2,.grid3{ grid-template-columns:1fr; } nav.sidebar{ display:none; } .wrap{ padding:36px 20px 90px; } h1{ font-size:30px; } }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:12px 0 22px; }
+  th{ text-align:left; color:var(--dim); font-weight:600; font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:9px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:10px; border-bottom:1px solid var(--line); color:var(--muted); vertical-align:top; }
+  td strong{ color:var(--text); }
+  tr:last-child td{ border-bottom:none; }
+  td code{ color:var(--teal); background:rgba(47,217,197,.08); padding:2px 5px; border-radius:4px; font-size:12px; }
+  table.compact td, table.compact th{ padding:7px 9px; }
+
+  .codeblock{ background:#08090C; border:1px solid var(--line); border-radius:8px; padding:14px 16px; overflow-x:auto; margin:10px 0 18px; position:relative; }
+  .codeblock .fname{ position:absolute; top:9px; right:13px; font-size:10px; color:var(--dim); font-family:'JetBrains Mono',monospace; }
+  .codeblock pre{ font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.65; color:#C9CCD8; white-space:pre-wrap; word-break:break-word; }
+  .codeblock .k{ color:var(--orange); } .codeblock .s{ color:var(--teal); } .codeblock .c{ color:var(--dim); } .codeblock .rd{ color:var(--red); } .codeblock .vt{ color:var(--violet); }
+
+  .callout{ border-radius:var(--radius); padding:14px 18px; margin:14px 0; border:1px solid; font-size:13.5px; }
+  .callout p{ margin-bottom:0; font-size:13.5px; }
+  .callout .lbl{ font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; display:block; font-weight:700; }
+  .callout.good{ background:rgba(95,217,125,.06); border-color:rgba(95,217,125,.3); } .callout.good .lbl{ color:var(--green); }
+  .callout.bad{ background:rgba(240,85,95,.06); border-color:rgba(240,85,95,.3); } .callout.bad .lbl{ color:var(--red); }
+  .callout.warn{ background:rgba(255,107,74,.06); border-color:rgba(255,107,74,.3); } .callout.warn .lbl{ color:var(--orange); }
+  .callout.info{ background:rgba(169,140,245,.06); border-color:rgba(169,140,245,.3); } .callout.info .lbl{ color:var(--violet); }
+
+  ul.checklist{ list-style:none; margin:12px 0 20px; columns:2; column-gap:26px; }
+  ul.checklist li{ font-size:13.5px; color:var(--muted); padding:6px 0 6px 24px; position:relative; break-inside:avoid; }
+  ul.checklist li::before{ content:"☐"; position:absolute; left:0; top:6px; color:var(--violet); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  @media (max-width:700px){ ul.checklist{ columns:1; } }
+
+  ul.plain{ margin:8px 0 16px 0; padding-left:20px; } ul.plain li{ color:var(--muted); font-size:13.5px; margin-bottom:6px; }
+  ul.plain li strong{ color:var(--text); }
+
+  .ascii{ background:#08090C; border:1px solid var(--line); border-radius:8px; padding:16px 20px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--teal); white-space:pre; overflow-x:auto; margin:14px 0 18px; line-height:1.55; }
+
+  .qa{ border:1px solid var(--line); border-radius:8px; margin-bottom:8px; background:var(--panel); overflow:hidden; }
+  .qa summary{ list-style:none; cursor:pointer; padding:13px 18px; display:flex; align-items:center; gap:12px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; }
+  .qa summary::-webkit-details-marker{ display:none; }
+  .qa summary .qnum{ font-family:'JetBrains Mono',monospace; color:var(--orange); font-size:11.5px; flex-shrink:0; width:30px; }
+  .qa summary .chev{ margin-left:auto; color:var(--dim); transition:transform .2s; font-size:11px; }
+  .qa[open] summary .chev{ transform:rotate(90deg); color:var(--violet); }
+  .qa .a{ padding:0 18px 16px 60px; font-size:13.3px; color:var(--muted); }
+  .qa .a p{ font-size:13.3px; margin-bottom:8px; }
+  .qa .a .meta{ font-size:11.5px; color:var(--dim); margin-bottom:6px; }
+  .qa .a .meta b{ color:var(--teal); }
+  .qa .diff{ font-family:'JetBrains Mono',monospace; font-size:10.5px; padding:3px 8px; border-radius:4px; margin-left:auto; text-transform:uppercase; letter-spacing:.04em; }
+  .diff.easy{ background:rgba(95,217,125,.12); color:var(--green); }
+  .diff.mid{ background:rgba(255,107,74,.12); color:var(--orange); }
+  .diff.hard{ background:rgba(240,85,95,.12); color:var(--red); }
+
+  .incident{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px 22px; margin-bottom:14px; }
+  .flow{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); line-height:2; }
+  .flow b{ color:var(--text); }
+  .flow .arrow{ color:var(--dim); }
+
+  .rf-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; margin:14px 0 20px; }
+  .rf-item{ font-size:13px; padding:10px 0; border-bottom:1px dashed var(--line); }
+  .rf-item .q{ color:var(--text); font-weight:600; }
+  .rf-item .a{ color:var(--muted); margin-top:3px; }
+  @media (max-width:700px){ .rf-grid{ grid-template-columns:1fr; } }
+
+  .svc-row{ display:grid; grid-template-columns:170px 1fr; gap:20px; padding:16px 0; border-bottom:1px solid var(--line); }
+  .svc-row:last-child{ border-bottom:none; }
+  .svc-name{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--text); display:flex; align-items:center; gap:8px; }
+  .svc-name .sw{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .svc-row p{ font-size:13.3px; margin-bottom:0; }
+
+  footer{ border-top:1px solid var(--line); padding:30px 46px; max-width:960px; margin:0 auto; color:var(--dim); font-size:12px; font-family:'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="brand"><div class="dot"></div><span>Git & GitHub</span></div>
+  <div class="brand-sub">Field Guide</div>
+  <ul class="navlist">
+    <li><a href="#s1">1. Git vs GitHub</a></li>
+    <li><a href="#s2">2. Git architecture</a></li>
+    <li><a href="#s3">3. Core concepts</a></li>
+    <li><a href="#s4">4. Git internals</a></li>
+    <li><a href="#s5">5. Core commands</a></li>
+    <li><a href="#s6">6. Branching & merging</a></li>
+    <li><a href="#s7">7. Merge vs rebase</a></li>
+    <li><a href="#s8">8. Branching strategies</a></li>
+    <li><a href="#s9">9. GitHub features</a></li>
+    <li><a href="#s10">10. GitHub interconnections</a></li>
+    <li><a href="#s11">11. GitHub Actions / CI-CD</a></li>
+    <li><a href="#s12">12. Production practices</a></li>
+    <li><a href="#s13">13. Security</a></li>
+    <li><a href="#s14">14. Troubleshooting</a></li>
+    <li><a href="#s15">15. Common errors</a></li>
+    <li><a href="#s16">16. Interview Q&A</a></li>
+    <li><a href="#s17">17. Rapid fire</a></li>
+    <li><a href="#s18">18. Cheat sheet</a></li>
+  </ul>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <section id="top">
+    <div class="eyebrow">Version Control · Git & GitHub</div>
+    <h1>Git tracks your code.<br>GitHub is where your team meets it.</h1>
+    <p class="lede">Git is a distributed version control system that runs entirely on your machine. GitHub is a hosted service built around Git that adds collaboration, review, automation, and a hub for every other tool in your pipeline to plug into. This guide covers both — from the internals that make Git actually make sense, through production branching strategy, to the interview questions that separate "I use git commit and git push" from real understanding.</p>
+    <div class="hero-tags">
+      <span class="tag">Git internals</span>
+      <span class="tag">Merge vs rebase</span>
+      <span class="tag">GitHub Actions & integrations</span>
+      <span class="tag">Production workflows</span>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section id="s1">
+    <div class="eyebrow">01</div>
+    <h2>Git vs GitHub — the distinction that matters</h2>
+    <p><strong>Git</strong> is a distributed version control system, created by Linus Torvalds in 2005 to manage the Linux kernel's source history. It runs locally — every clone of a repository is a full copy of the entire history, with no dependency on a central server to function. You can commit, branch, merge, and view history entirely offline.</p>
+    <p><strong>GitHub</strong> is a company/platform (owned by Microsoft since 2018) that hosts Git repositories in the cloud and wraps them with collaboration tooling: pull requests, code review, issue tracking, CI/CD (Actions), package registries, security scanning, and project management. GitHub didn't invent Git — it's the most popular place to <em>host</em> Git repositories and collaborate around them. GitLab and Bitbucket are direct competitors offering similar hosting-plus-collaboration layers.</p>
+    <div class="grid2">
+      <div class="card"><h4 style="margin-top:0;">Why Git was created</h4><p style="font-size:13.5px;">Centralized version control systems (like SVN, CVS) required constant network access and had a single point of failure — the central server. Distributed version control solved this: every developer has the complete history locally, commits are fast (no network round-trip), and branching/merging is cheap enough to use constantly instead of avoiding it.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Why GitHub matters on top of Git</h4><p style="font-size:13.5px;">Git alone has no concept of "pull request," "issue," or "who's allowed to merge to main." GitHub adds the social/organizational layer — review workflows, permissions, automation triggers — that turns a version control tool into a team collaboration platform.</p></div>
+    </div>
+    <h3>When NOT to reach for GitHub specifically</h3>
+    <ul class="plain">
+      <li><strong>Highly regulated/air-gapped environments</strong> — self-hosted GitLab or Gitea inside your own network instead of a public SaaS platform.</li>
+      <li><strong>Existing GitLab-centric CI/CD investment</strong> — migrating just for GitHub-specific features rarely justifies the cost.</li>
+      <li><strong>You need on-prem hosting with GitHub's UI</strong> — GitHub Enterprise Server exists for this, but it's a different product from github.com.</li>
+    </ul>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <div class="eyebrow">02</div>
+    <h2>Git architecture — the three trees</h2>
+    <p>Nearly every Git command moves changes between three areas. Understanding this model makes every command's behavior predictable instead of memorized.</p>
+    <div class="ascii">Working Directory        Staging Area (Index)        Repository (.git)
+  (your files)                (git add)                  (git commit)
+       │                          │                            │
+       │──── git add ────────────▶│                            │
+       │                          │──── git commit ───────────▶│
+       │◀─── git checkout ────────┼────────────────────────────│
+       │◀────────────────────── git reset ──────────────────────│
+
+       Local Repository                    Remote Repository (GitHub)
+              │                                      │
+              │──────────── git push ───────────────▶│
+              │◀─────────── git pull / fetch ─────────│</div>
+    <h3>Step-by-step</h3>
+    <ul class="plain">
+      <li><strong>Working directory:</strong> the actual files on disk you're editing — Git compares these against the last commit to determine what's "changed."</li>
+      <li><strong>Staging area (index):</strong> a snapshot-in-progress — <code>git add</code> moves specific changes here, letting you build a commit out of only some of your edits, not necessarily everything you've touched.</li>
+      <li><strong>Local repository:</strong> <code>git commit</code> takes what's staged and permanently records it as a new snapshot in your local <code>.git</code> history — this step requires no network access at all.</li>
+      <li><strong>Remote repository:</strong> <code>git push</code>/<code>git pull</code> sync your local history with a remote copy (GitHub) — this is the only step that touches the network.</li>
+    </ul>
+    <div class="callout info"><span class="lbl">What an interviewer expects you to know</span><p>That committing is a local, offline operation, and pushing is a separate, explicit, network operation — a huge number of "my changes disappeared" incidents trace back to someone not realizing they committed locally but never pushed.</p></div>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <div class="eyebrow">03</div>
+    <h2>Core concepts</h2>
+
+    <h3>1. Commit</h3>
+    <p><strong>Simple:</strong> a saved snapshot of your project at a point in time, with a message describing the change. <strong>Technical:</strong> an immutable object containing a pointer to a tree (the file/directory snapshot), a pointer to its parent commit(s), author/committer metadata, and a message — identified by a SHA-1 (or SHA-256 in newer configs) hash of all of that content. <strong>Why it exists:</strong> to create an auditable, addressable history where every state of the project can be referenced and restored. <strong>Use case:</strong> reverting a bad change, understanding when a bug was introduced via <code>git blame</code>/<code>bisect</code>. <strong>Common mistake:</strong> giant commits mixing unrelated changes, making history useless for review or bisecting. <strong>Interview Q:</strong> "What makes a commit hash change?" → any change to its content, parent, or metadata — which is why commits are effectively tamper-evident.</p>
+
+    <h3>2. Branch</h3>
+    <p><strong>Simple:</strong> a movable pointer to a specific commit, letting you work on changes in isolation. <strong>Technical:</strong> literally a 41-byte file containing a commit SHA, stored under <code>.git/refs/heads/</code> — this is why branching in Git is nearly instantaneous, unlike systems that copy the whole codebase per branch. <strong>Why it exists:</strong> to let multiple lines of work (features, fixes, experiments) progress independently without interfering with each other. <strong>Use case:</strong> a feature branch off <code>main</code>, developed and reviewed independently before merging. <strong>Common mistake:</strong> long-lived branches that drift so far from <code>main</code> that merging becomes a painful, conflict-heavy event. <strong>Interview Q:</strong> "Why is branching in Git so cheap compared to older VCS tools?" → because a branch is just a pointer, not a full copy of the codebase.</p>
+
+    <h3>3. HEAD</h3>
+    <p><strong>Simple:</strong> a pointer to "where you currently are" — usually the tip of your current branch. <strong>Technical:</strong> a reference (in <code>.git/HEAD</code>) that normally points to a branch ref, which in turn points to a commit; when it points directly to a commit instead of a branch, you're in "detached HEAD" state. <strong>Why it exists:</strong> Git needs to know what your next commit's parent will be, and what <code>git checkout</code>/<code>git switch</code> are relative to. <strong>Use case:</strong> <code>HEAD~1</code>, <code>HEAD^</code> are common shorthand for "one commit back from where I am now." <strong>Common mistake:</strong> committing in detached HEAD state and then switching branches, seemingly "losing" the commits (they're still there, just unreferenced — recoverable via reflog). <strong>Interview Q:</strong> "How do you recover commits made in a detached HEAD state?" → <code>git reflog</code> to find the commit SHA, then create a branch pointing at it.</p>
+
+    <h3>4. Merge</h3>
+    <p><strong>Simple:</strong> combining changes from one branch into another. <strong>Technical:</strong> either a fast-forward (if the target branch has no divergent commits, the pointer simply moves forward) or a three-way merge (creates a new "merge commit" with two parents, using the common ancestor to compute the combined diff). <strong>Why it exists:</strong> to bring independently developed work back together into a shared history. <strong>Use case:</strong> merging a reviewed pull request into <code>main</code>. <strong>Common mistake:</strong> merging without pulling the latest target branch first, causing avoidable conflicts. <strong>Interview Q:</strong> "What's a fast-forward merge?" → when the target branch hasn't diverged, so Git just moves the pointer forward with no new merge commit needed.</p>
+
+    <h3>5. Remote</h3>
+    <p><strong>Simple:</strong> a reference to a hosted copy of the repository, usually named <code>origin</code>. <strong>Technical:</strong> a named URL entry in <code>.git/config</code> that <code>git fetch</code>/<code>push</code>/<code>pull</code> operate against; a repo can have multiple remotes (e.g. <code>origin</code> and <code>upstream</code> for a fork). <strong>Why it exists:</strong> to let distributed local repositories synchronize with each other through a shared hosted point. <strong>Use case:</strong> <code>upstream</code> remote for pulling updates from the original repo you forked. <strong>Common mistake:</strong> pushing to the wrong remote, especially after forking, sending changes somewhere unintended. <strong>Interview Q:</strong> "What's the difference between origin and upstream?" → origin is your own remote (often your fork); upstream is the original repo you forked from.</p>
+
+    <h3>6. Tag</h3>
+    <p><strong>Simple:</strong> a fixed, named pointer to a specific commit, typically used for releases. <strong>Technical:</strong> unlike a branch, a tag doesn't move as new commits are added — annotated tags are full Git objects with their own metadata (tagger, message, optionally GPG-signed); lightweight tags are just a named pointer. <strong>Why it exists:</strong> to mark meaningful, permanent points in history (releases, milestones) separately from the constantly-moving branch pointers. <strong>Use case:</strong> <code>v2.3.0</code> tagged on the exact commit that was deployed to production. <strong>Common mistake:</strong> using lightweight tags for releases when annotated tags (with signing) are the production-appropriate choice. <strong>Interview Q:</strong> "Why use an annotated tag instead of lightweight for a release?" → it carries metadata and can be GPG-signed for provenance verification.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <div class="eyebrow">04</div>
+    <h2>Git internals — what's actually in .git</h2>
+    <p>Git's entire data model is four object types, all content-addressed by SHA hash, stored in <code>.git/objects</code>.</p>
+    <table>
+      <tr><th>Object</th><th>Contains</th><th>Analogy</th></tr>
+      <tr><td class="strong">Blob</td><td>Raw file content (no filename, no metadata)</td><td>A file's contents, nameless</td></tr>
+      <tr><td class="strong">Tree</td><td>A directory listing — filenames + modes + pointers to blobs/trees</td><td>A folder structure</td></tr>
+      <tr><td class="strong">Commit</td><td>Pointer to a tree, parent commit(s), author, message</td><td>A labeled snapshot in time</td></tr>
+      <tr><td class="strong">Tag (annotated)</td><td>Pointer to a commit, plus tagger metadata</td><td>A permanent bookmark</td></tr>
+    </table>
+    <p><strong>Why content-addressing matters:</strong> a blob's hash is derived purely from its content — so two identical files anywhere in history, even in unrelated commits, are stored once. This is also why Git can efficiently detect that "this content already exists" without comparing bytes manually.</p>
+    <div class="codeblock"><span class="fname">peek inside .git</span><pre><span class="c"># See what a commit object actually contains</span>
+git cat-file -p HEAD
+
+<span class="c"># See the tree a commit points to</span>
+git cat-file -p HEAD^{tree}
+
+<span class="c"># See the raw type of any object</span>
+git cat-file -t &lt;sha&gt;</pre></div>
+    <div class="callout info"><span class="lbl">What an interviewer expects</span><p>That you understand a commit doesn't store a "diff" — it stores a full snapshot (tree) at that point, and Git computes diffs on the fly by comparing trees. This is a common misconception worth correcting explicitly in an interview answer.</p></div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <div class="eyebrow">05</div>
+    <h2>Core commands</h2>
+
+    <h3>Everyday basics</h3>
+    <div class="codeblock"><pre>git init                          <span class="c"># create a new repo</span>
+git clone &lt;url&gt;                   <span class="c"># copy a remote repo locally, with full history</span>
+git status                        <span class="c"># see what's changed/staged</span>
+git add &lt;file&gt;                    <span class="c"># stage specific changes</span>
+git commit -m <span class="s">"message"</span>          <span class="c"># save a snapshot of staged changes</span>
+git log --oneline --graph         <span class="c"># view history compactly</span>
+git diff                          <span class="c"># unstaged changes vs last commit</span>
+git diff --staged                 <span class="c"># staged changes vs last commit</span></pre></div>
+
+    <h3>Branching & remotes</h3>
+    <div class="codeblock"><pre>git branch feature-x               <span class="c"># create a branch</span>
+git switch feature-x                <span class="c"># move to it (modern replacement for checkout)</span>
+git switch -c feature-x             <span class="c"># create + switch in one step</span>
+git push -u origin feature-x        <span class="c"># push and set upstream tracking</span>
+git fetch origin                    <span class="c"># download remote changes, don't merge yet</span>
+git pull                            <span class="c"># fetch + merge (or rebase, if configured) in one step</span></pre></div>
+
+    <h3>Undoing things (know the difference)</h3>
+    <div class="codeblock"><pre>git restore &lt;file&gt;                  <span class="c"># discard uncommitted changes to a file</span>
+git restore --staged &lt;file&gt;         <span class="c"># unstage, keep the edits</span>
+git reset --soft HEAD~1             <span class="c"># undo last commit, keep changes staged</span>
+git reset --mixed HEAD~1            <span class="c"># undo last commit, keep changes unstaged (default)</span>
+<span class="rd">git reset --hard HEAD~1             # undo last commit, DISCARD the changes entirely</span>
+git revert &lt;sha&gt;                    <span class="c"># create a NEW commit that undoes a prior one (safe for shared history)</span>
+git reflog                          <span class="c"># recovery lifeline — shows every HEAD movement, even after reset</span></pre></div>
+    <div class="callout bad"><span class="lbl">Critical distinction</span><p><code>git reset</code> rewrites history and is fine on branches only you use. <code>git revert</code> adds a new commit undoing an old one, preserving history — this is the only safe option once a commit has been pushed and others may have based work on it.</p></div>
+
+    <h3>Stash & cherry-pick</h3>
+    <div class="codeblock"><pre>git stash                           <span class="c"># shelve uncommitted changes temporarily</span>
+git stash pop                       <span class="c"># reapply and remove the stashed changes</span>
+git cherry-pick &lt;sha&gt;               <span class="c"># apply one specific commit onto the current branch</span></pre></div>
+    <p style="font-size:13px;"><strong>Production use case:</strong> <code>cherry-pick</code> is the standard way to backport a single bugfix commit to a release branch without merging the entire feature branch it originated on.</p>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <div class="eyebrow">06</div>
+    <h2>Branching & merging in practice</h2>
+    <div class="ascii">main:      A───B───C─────────────F───G
+                    \               /
+feature:             D───E────────╯
+                                (merge commit F)</div>
+    <p>A feature branch diverges from <code>main</code> at commit <code>C</code>, develops independently through <code>D</code> and <code>E</code>, and rejoins via a merge commit <code>F</code> that has two parents — <code>C</code>'s line and <code>E</code>. Git then continues normal linear history from there.</p>
+
+    <h3>Resolving a merge conflict</h3>
+    <div class="codeblock"><pre><span class="c">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="k">current branch's version of this line</span>
+<span class="c">=======</span>
+<span class="vt">incoming branch's version of this line</span>
+<span class="c">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature-branch</span></pre></div>
+    <p>Edit the file to the correct final content (removing the conflict markers), then <code>git add &lt;file&gt;</code> and continue the merge/rebase. <strong>Common mistake:</strong> resolving a conflict but forgetting to <code>git add</code> the resolved file before committing/continuing, leaving Git thinking the conflict is still unresolved.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <div class="eyebrow">07</div>
+    <h2>Merge vs rebase — the interview classic</h2>
+    <div class="ascii">MERGE — preserves exact history, adds a merge commit
+main:      A───B───C───────F
+                    \      /
+feature:             D────E
+
+REBASE — replays your commits on top, linear history, no merge commit
+main:      A───B───C
+feature:             D'───E'   (D and E rewritten with new SHAs)</div>
+    <table>
+      <tr><th></th><th>Merge</th><th>Rebase</th></tr>
+      <tr><td class="strong">History</td><td>Preserves exact chronological history, including a merge commit</td><td>Rewrites commits onto a new base — linear, but the commit SHAs change</td></tr>
+      <tr><td class="strong">Safety on shared branches</td><td>Always safe</td><td>Never rebase commits that others have already pulled — it rewrites SHAs and breaks their history</td></tr>
+      <tr><td class="strong">Resulting log</td><td>Branchy, shows exactly what happened</td><td>Clean and linear, easier to read/bisect</td></tr>
+      <tr><td class="strong">Typical use</td><td>Merging a finished, reviewed PR into <code>main</code></td><td>Cleaning up your own feature branch before opening a PR</td></tr>
+    </table>
+    <div class="callout warn"><span class="lbl">The golden rule</span><p>Never rebase a branch that other people have already pulled from and built work on top of. Rebase freely on your own local, unshared branches; merge (or squash-merge) for anything that's already shared.</p></div>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <div class="eyebrow">08</div>
+    <h2>Branching strategies</h2>
+    <table>
+      <tr><th>Strategy</th><th>Model</th><th>Best for</th></tr>
+      <tr><td class="strong">GitHub Flow</td><td>Single <code>main</code> branch, always deployable; every change via a short-lived feature branch + PR, merged and deployed continuously</td><td>Continuous deployment, web apps, most modern SaaS teams</td></tr>
+      <tr><td class="strong">Git Flow</td><td><code>main</code> + <code>develop</code> + feature/release/hotfix branches, structured release cycles</td><td>Scheduled releases, versioned software (desktop apps, libraries with formal release cadence)</td></tr>
+      <tr><td class="strong">Trunk-Based Development</td><td>Everyone commits to <code>main</code> (or very short-lived branches) frequently, feature flags hide incomplete work</td><td>High-velocity teams practicing continuous integration at scale</td></tr>
+      <tr><td class="strong">Fork & Pull Request</td><td>Contributors fork the repo, work in their fork, open PRs back to upstream</td><td>Open-source projects with external, untrusted contributors</td></tr>
+    </table>
+    <div class="callout good"><span class="lbl">Production reality</span><p>Most modern SaaS teams use GitHub Flow or trunk-based development plus feature flags — Git Flow's heavier branch structure is increasingly reserved for software with genuinely scheduled, versioned releases rather than continuous deployment.</p></div>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <div class="eyebrow">09</div>
+    <h2>GitHub-specific features</h2>
+    <div class="grid2">
+      <div class="card"><h4 style="margin-top:0;">Pull Requests</h4><p style="font-size:13.5px;">The review-and-merge unit — a proposed set of commits, diffable, commentable, with required-checks and required-approvals gates before merge.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Branch protection rules</h4><p style="font-size:13.5px;">Enforce required reviews, required status checks (CI must pass), no force-push, no direct pushes to <code>main</code> — the mechanism that actually makes a branching strategy enforced rather than just documented.</p></div>
+      <div class="card"><h4 style="margin-top:0;">CODEOWNERS</h4><p style="font-size:13.5px;">A file mapping paths to required reviewers — automatically requests review from the right team when a PR touches their code.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Issues & Projects</h4><p style="font-size:13.5px;">Lightweight tracking linked directly to commits/PRs via keywords like <code>Fixes #123</code>, auto-closing issues on merge.</p></div>
+      <div class="card"><h4 style="margin-top:0;">GitHub Actions</h4><p style="font-size:13.5px;">Native CI/CD — YAML-defined workflows triggered by repo events (push, PR, schedule, release) running in hosted or self-hosted runners.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Packages / Container Registry</h4><p style="font-size:13.5px;">Hosts npm/Docker/Maven/NuGet packages directly alongside the code that produces them, with the same permission model.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Dependabot</h4><p style="font-size:13.5px;">Automated dependency update PRs plus vulnerability alerts scanning your dependency manifests against known CVEs.</p></div>
+      <div class="card"><h4 style="margin-top:0;">Secret scanning / code scanning</h4><p style="font-size:13.5px;">Detects committed credentials and, via CodeQL, static analysis vulnerabilities — can block a push containing a detected secret before it ever lands.</p></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <div class="eyebrow">10</div>
+    <h2>How GitHub interconnects with everything else</h2>
+    <p>GitHub sits at the center of most DevOps toolchains — not because it does everything, but because its webhook/event system lets every other tool react to what happens in the repo.</p>
+    <div class="card">
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--orange)"></span>CI/CD (Jenkins / CircleCI / GitLab-style runners)</div><p>External CI systems subscribe to GitHub webhooks (push, PR opened) to trigger builds; GitHub reports commit statuses back so PR checks show pass/fail directly in the review UI, gating merges via branch protection.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--violet)"></span>GitHub Actions → cloud deploy</div><p>A workflow builds a container, pushes to ECR/GCR/Docker Hub, then calls the cloud provider's deploy API (e.g. updates an ECS service or EKS manifest) — OIDC federation (see the IAM guide) avoids storing static cloud credentials as repo secrets.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--teal)"></span>Docker / container registries</div><p>A <code>Dockerfile</code> in the repo is built by Actions/CI on every merge, tagged with the commit SHA for full traceability from a running container back to the exact commit that produced it.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--green)"></span>Kubernetes / Argo CD (GitOps)</div><p>In a GitOps model, a separate manifests repo is the source of truth for cluster state — Argo CD/Flux watches that repo and reconciles the live cluster to match it automatically on every merge, no direct <code>kubectl apply</code> needed.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--red)"></span>Terraform / IaC</div><p>Infrastructure changes go through the same PR review flow as application code — a <code>terraform plan</code> output posted as a PR comment by CI lets reviewers see the exact infra diff before <code>apply</code> runs on merge.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--orange)"></span>Slack / Teams / PagerDuty</div><p>GitHub webhooks notify chat channels on PR events, deploy status, or failed workflows; incident tools can auto-link a triggering deploy's commit SHA into an incident timeline.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--violet)"></span>Jira / issue trackers</div><p>Commit messages/PR titles referencing a ticket ID (e.g. <code>PROJ-123</code>) auto-link and can auto-transition ticket status via integration apps, keeping code state and project tracking in sync.</p></div>
+      <div class="svc-row"><div class="svc-name"><span class="sw" style="background:var(--teal)"></span>SSO / IAM</div><p>GitHub Enterprise integrates with SAML/OIDC identity providers for org membership and access — repo permissions can map to identity-provider groups rather than being managed manually per user.</p></div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <div class="eyebrow">11</div>
+    <h2>GitHub Actions — CI/CD walkthrough</h2>
+    <div class="codeblock"><span class="fname">.github/workflows/ci.yml</span><pre><span class="k">name</span>: CI
+
+<span class="k">on</span>:
+  pull_request:
+    branches: [<span class="s">main</span>]
+  push:
+    branches: [<span class="s">main</span>]
+
+<span class="k">jobs</span>:
+  test:
+    runs-on: <span class="s">ubuntu-latest</span>
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: <span class="s">'20'</span>
+      - run: npm ci
+      - run: npm test
+
+  deploy:
+    needs: test
+    <span class="k">if</span>: github.ref == <span class="s">'refs/heads/main'</span>
+    runs-on: <span class="s">ubuntu-latest</span>
+    permissions:
+      id-token: write   <span class="c"># enables OIDC — no static AWS keys stored as secrets</span>
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::111122223333:role/gh-actions-deploy
+          aws-region: us-east-1
+      - run: ./deploy.sh</pre></div>
+    <p style="font-size:13.5px;"><strong>Why this is the production pattern:</strong> tests gate deploy via <code>needs: test</code>; deploy only runs on <code>main</code>, not every PR; and OIDC federation (Section 10's IAM connection) means there's no long-lived AWS access key sitting in GitHub Secrets waiting to be leaked.</p>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <div class="eyebrow">12</div>
+    <h2>Production practices</h2>
+    <table>
+      <tr><th>Area</th><th>Beginner</th><th>Production</th></tr>
+      <tr><td class="strong">Commits</td><td>Vague messages like "fix stuff", huge mixed-change commits</td><td>Conventional Commits format, one logical change per commit</td></tr>
+      <tr><td class="strong">Branch protection</td><td>Anyone can push directly to <code>main</code></td><td>Required reviews, required passing CI, no force-push to <code>main</code></td></tr>
+      <tr><td class="strong">Merging</td><td>Manual local merges, inconsistent history</td><td>Squash-merge via PR for a clean, linear <code>main</code> history</td></tr>
+      <tr><td class="strong">Secrets</td><td>API keys committed directly to the repo</td><td>GitHub Secrets/Actions OIDC, secret scanning enabled and blocking pushes</td></tr>
+      <tr><td class="strong">Releases</td><td>Manual zip files, no version tracking</td><td>Annotated, signed tags + automated changelog + GitHub Releases</td></tr>
+      <tr><td class="strong">Large files</td><td>Binaries committed directly, bloating the repo forever</td><td>Git LFS, or kept out of the repo entirely (artifact storage instead)</td></tr>
+      <tr><td class="strong">CI</td><td>None, or manual local testing only</td><td>Required status checks on every PR, blocking merge on failure</td></tr>
+      <tr><td class="strong">Access control</td><td>Everyone has admin on every repo</td><td>Least-privilege teams, CODEOWNERS-enforced review, SSO-managed org membership</td></tr>
+    </table>
+    <h3>Conventional Commits (widely adopted production standard)</h3>
+    <div class="codeblock"><pre>feat(auth): add SSO login support
+fix(api): correct null pointer on empty payload
+chore(deps): bump lodash to 4.17.21
+BREAKING CHANGE: renamed `getUser` to `fetchUser`</pre></div>
+    <p style="font-size:13px;">This format is machine-parseable — it's what automated changelog generators and semantic-version bumpers (e.g. semantic-release) read to decide whether a merge is a patch, minor, or major version bump.</p>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <div class="eyebrow">13</div>
+    <h2>Security</h2>
+    <ul class="plain">
+      <li><strong>SSH keys vs HTTPS+token:</strong> SSH key pairs or a fine-grained personal access token — never a password, which GitHub no longer accepts for Git operations over HTTPS.</li>
+      <li><strong>GPG/SSH commit signing:</strong> proves a commit genuinely came from the claimed author, shown as "Verified" in GitHub's UI — important for supply-chain integrity, especially combined with required signing in branch protection.</li>
+      <li><strong>Secret scanning:</strong> GitHub scans pushed content for known credential patterns (AWS keys, API tokens) and can be configured to block the push entirely (push protection) rather than just alert after the fact.</li>
+      <li><strong>Dependabot alerts:</strong> flags dependencies with known CVEs, opens automated update PRs — a baseline supply-chain hygiene practice.</li>
+      <li><strong>Least-privilege repo/org permissions:</strong> Read/Triage/Write/Maintain/Admin roles, scoped per-repo or per-team, not blanket org-admin for convenience.</li>
+      <li><strong>Fine-grained PATs and short-lived tokens:</strong> scope tokens to specific repos and specific permissions instead of classic all-access tokens.</li>
+      <li><strong>Common mistakes:</strong> committing <code>.env</code> files with real credentials, using long-lived cloud access keys as Action secrets instead of OIDC, disabling branch protection "temporarily" and forgetting to re-enable it.</li>
+    </ul>
+    <div class="grid2">
+      <div class="callout bad"><span class="lbl">Insecure</span><p>AWS access key/secret pasted directly into GitHub Secrets, no rotation, direct push access to <code>main</code> for all contributors, no secret scanning.</p></div>
+      <div class="callout good"><span class="lbl">Secure</span><p>OIDC-federated deploy role (no static keys), branch protection with required review + status checks, secret scanning with push protection enabled.</p></div>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="s14">
+    <div class="eyebrow">14</div>
+    <h2>Troubleshooting</h2>
+    <div class="incident"><h3 style="margin-top:0;">"I committed to the wrong branch."</h3>
+    <div class="flow"><b>FIX</b> <span class="arrow">↓</span> <code>git log</code> to find the commit SHA · switch to the correct branch · <code>git cherry-pick &lt;sha&gt;</code> · switch back to the wrong branch and <code>git reset --hard HEAD~1</code> to remove it there<br><b>PREVENT</b> <span class="arrow">↓</span> always check <code>git branch</code>/<code>git status</code> before committing</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">"I force-pushed and now teammates' branches are broken."</h3>
+    <div class="flow"><b>CAUSE</b> <span class="arrow">↓</span> a rebase or history rewrite was force-pushed to a shared branch after others had already pulled it<br><b>FIX</b> <span class="arrow">↓</span> teammates need <code>git pull --rebase</code> or, in the worst case, to reset their local branch to match the new remote history<br><b>PREVENT</b> <span class="arrow">↓</span> use <code>--force-with-lease</code> instead of <code>--force</code> (fails safely if the remote has commits you don't have locally), and never rebase branches others are actively working from</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">"I need to undo a commit that's already been pushed."</h3>
+    <div class="flow"><b>FIX</b> <span class="arrow">↓</span> <code>git revert &lt;sha&gt;</code> — creates a new commit undoing the change, safe for shared history; never <code>reset --hard</code> + force-push on a shared branch<br><b>PREVENT</b> <span class="arrow">↓</span> reserve <code>reset</code> for local, unpushed commits only</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">"My PR shows way more changes than I actually made."</h3>
+    <div class="flow"><b>CAUSE</b> <span class="arrow">↓</span> feature branch is out of date with <code>main</code>, so the diff includes everyone else's merged changes too<br><b>FIX</b> <span class="arrow">↓</span> <code>git fetch origin && git rebase origin/main</code> (or merge, if the branch is already shared) to bring the branch up to date<br><b>PREVENT</b> <span class="arrow">↓</span> rebase/merge from <code>main</code> regularly on long-lived feature branches instead of once at the end</div></div>
+
+    <div class="incident"><h3 style="margin-top:0;">"Merge conflict I don't understand how to resolve."</h3>
+    <div class="flow"><b>CHECKS</b> <span class="arrow">↓</span> <code>git status</code> to see conflicted files · open each and look for <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> markers · use <code>git log --merge</code> to see the commits from both sides<br><b>FIX</b> <span class="arrow">↓</span> manually reconcile the content, remove markers, <code>git add</code>, then continue (<code>git rebase --continue</code> or finish the merge commit)<br><b>ESCAPE HATCH</b> <span class="arrow">↓</span> <code>git merge --abort</code> or <code>git rebase --abort</code> to cleanly back out if it gets too tangled and start over</div></div>
+  </section>
+
+  <!-- 15 -->
+  <section id="s15">
+    <div class="eyebrow">15</div>
+    <h2>Common errors</h2>
+    <table>
+      <tr><th>Error</th><th>Root cause</th><th>Fix</th></tr>
+      <tr><td><code>fatal: not a git repository</code></td><td>Running a git command outside a repo (no <code>.git</code> folder found up the tree)</td><td><code>cd</code> into the repo, or <code>git init</code> if starting fresh</td></tr>
+      <tr><td><code>Updates were rejected because the remote contains work...</code></td><td>Remote has commits you don't have locally</td><td><code>git pull</code> (merge or rebase) before pushing again</td></tr>
+      <tr><td><code>fatal: refusing to merge unrelated histories</code></td><td>Merging two repos/branches with no common commit ancestor</td><td>Use <code>--allow-unrelated-histories</code> only if this is genuinely intended</td></tr>
+      <tr><td><code>error: Your local changes would be overwritten</code></td><td>Uncommitted changes conflict with an incoming pull/checkout</td><td><code>git stash</code>, then pull/checkout, then <code>git stash pop</code></td></tr>
+      <tr><td><code>detached HEAD state</code></td><td>Checked out a specific commit/tag instead of a branch</td><td><code>git switch -c new-branch-name</code> to save the work on a real branch</td></tr>
+      <tr><td><code>Permission denied (publickey)</code></td><td>SSH key not added to the GitHub account or ssh-agent</td><td><code>ssh-add ~/.ssh/id_ed25519</code>, verify the public key is added on GitHub</td></tr>
+      <tr><td><code>fatal: The current branch has no upstream branch</code></td><td>Never pushed this branch with tracking set</td><td><code>git push -u origin &lt;branch&gt;</code></td></tr>
+    </table>
+  </section>
+
+  <!-- 16 -->
+  <section id="s16">
+    <div class="eyebrow">16</div>
+    <h2>Interview questions</h2>
+
+    <h3>Fundamentals</h3>
+    <details class="qa"><summary><span class="qnum">Q1</span>What's the difference between Git and GitHub?<span class="diff easy">Easy</span><span class="chev">▸</span></summary>
+    <div class="a"><p>Git is the distributed version control system itself — it runs locally and needs no server to function. GitHub is a hosted platform built around Git that adds collaboration features: pull requests, code review, issue tracking, CI/CD, and access control.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">Q2</span>What's the difference between <code>git fetch</code> and <code>git pull</code>?<span class="diff easy">Easy</span><span class="chev">▸</span></summary>
+    <div class="a"><p><code>fetch</code> downloads remote changes into your local repo's remote-tracking branches without touching your working branch. <code>pull</code> is <code>fetch</code> plus an automatic merge (or rebase, if configured) into your current branch. <code>fetch</code> is the safer choice when you want to review incoming changes before integrating them.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">Q3</span>What does <code>git reset --hard</code> actually do, and why is it dangerous?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+    <div class="a"><p>It moves the branch pointer to a specified commit and overwrites both the staging area and working directory to match — any uncommitted changes and any commits after that point are discarded from the working tree (though unpushed commits are usually still recoverable briefly via <code>git reflog</code>). It's dangerous because it silently destroys uncommitted work with no confirmation prompt.</p></div></details>
+
+    <h3>Intermediate</h3>
+    <details class="qa"><summary><span class="qnum">I1</span>Explain merge vs rebase, and when you'd use each.<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+    <div class="a"><p>Merge combines two branches with a merge commit, preserving exact chronological history — always safe, even on shared branches. Rebase replays your commits onto a new base, producing a linear history but rewriting commit SHAs — safe only on branches nobody else has pulled from. Use merge for integrating a finished, reviewed PR; use rebase to clean up your own branch before opening one.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I2</span>How would you recover a commit after an accidental <code>git reset --hard</code>?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+    <div class="a"><p><code>git reflog</code> shows every position HEAD has recently pointed to, including the commit that existed before the reset — find its SHA and run <code>git reset --hard &lt;sha&gt;</code> (or <code>git cherry-pick</code> it onto your current branch) to recover it. Reflog entries eventually expire (default ~90 days), so this isn't a permanent safety net.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">I3</span>What's the purpose of a <code>.gitignore</code> file, and what happens if you add a pattern for a file that's already tracked?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+    <div class="a"><p><code>.gitignore</code> tells Git which untracked files to never stage automatically. If a file is already tracked, adding it to <code>.gitignore</code> has no retroactive effect — you need <code>git rm --cached &lt;file&gt;</code> to stop tracking it going forward while leaving it on disk.</p></div></details>
+
+    <h3>Advanced</h3>
+    <details class="qa"><summary><span class="qnum">A1</span>Walk through what happens internally when you run <code>git commit</code>.<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+    <div class="a"><p>Git writes a blob object for each changed file's content (if that exact content doesn't already exist as an object), builds tree objects representing the directory structure pointing to those blobs, creates a commit object pointing to the root tree plus the current HEAD as its parent, then moves the current branch ref to point at the new commit — all identified by SHA hashes of their content.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">A2</span>How would you design a Git branching + CI/CD strategy for a team doing continuous deployment?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+    <div class="a"><p>GitHub Flow: a single always-deployable <code>main</code>, short-lived feature branches opened as PRs, branch protection requiring passing CI and at least one review before merge, squash-merge for a clean linear history, and an Actions workflow that deploys automatically on every merge to <code>main</code> — feature flags for anything not ready to be fully live, rather than long-lived feature branches.</p></div></details>
+
+    <details class="qa"><summary><span class="qnum">A3</span>How does GitHub Actions avoid storing long-lived cloud credentials as secrets?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+    <div class="a"><p>Via OIDC federation — the workflow requests a short-lived OIDC token from GitHub's identity provider, which the cloud provider's IAM trusts (scoped to a specific repo/branch via trust policy conditions), and exchanges for temporary credentials through something like AWS STS. No static access key ever needs to be stored in GitHub Secrets at all.</p></div></details>
+
+    <h3>Troubleshooting</h3>
+    <details class="qa"><summary><span class="qnum">T1</span>A teammate says their branch is "completely broken" after you force-pushed to a shared branch — what happened and how do you fix it?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+    <div class="a"><p>The force push rewrote the shared branch's history, so their local branch (based on the old history) now diverges incompatibly from the remote. They need to reconcile — typically <code>git fetch</code> then resetting their local branch to match the new remote history (losing any local-only work first if needed, or rebasing it onto the new base). Going forward, use <code>--force-with-lease</code> and avoid rewriting history on genuinely shared branches.</p></div></details>
+  </section>
+
+  <!-- 17 -->
+  <section id="s17">
+    <div class="eyebrow">17</div>
+    <h2>Rapid fire</h2>
+    <div class="rf-grid">
+      <div class="rf-item"><div class="q">Git vs GitHub?</div><div class="a">Tool vs hosted platform built around it.</div></div>
+      <div class="rf-item"><div class="q">What is a commit?</div><div class="a">An immutable snapshot with a parent pointer and message.</div></div>
+      <div class="rf-item"><div class="q">What is a branch, technically?</div><div class="a">A movable pointer to a commit.</div></div>
+      <div class="rf-item"><div class="q">Merge vs rebase, one line?</div><div class="a">Preserve history vs rewrite it linear.</div></div>
+      <div class="rf-item"><div class="q">When is rebase dangerous?</div><div class="a">On branches others have already pulled from.</div></div>
+      <div class="rf-item"><div class="q">Reset vs revert?</div><div class="a">Rewrites history vs adds a new undo commit.</div></div>
+      <div class="rf-item"><div class="q">Fetch vs pull?</div><div class="a">Download only vs download + auto-merge.</div></div>
+      <div class="rf-item"><div class="q">What recovers a "lost" commit?</div><div class="a"><code>git reflog</code>.</div></div>
+      <div class="rf-item"><div class="q">What's detached HEAD?</div><div class="a">HEAD points directly at a commit, not a branch.</div></div>
+      <div class="rf-item"><div class="q">What's a fast-forward merge?</div><div class="a">No divergence — pointer just moves forward, no merge commit.</div></div>
+      <div class="rf-item"><div class="q">What does .gitignore do?</div><div class="a">Prevents matching untracked files from being staged.</div></div>
+      <div class="rf-item"><div class="q">What's cherry-pick for?</div><div class="a">Applying one specific commit onto another branch.</div></div>
+      <div class="rf-item"><div class="q">What's a PR, functionally?</div><div class="a">A reviewable, gated proposal to merge one branch into another.</div></div>
+      <div class="rf-item"><div class="q">What enforces required review?</div><div class="a">Branch protection rules.</div></div>
+      <div class="rf-item"><div class="q">What's CODEOWNERS for?</div><div class="a">Auto-requesting review from the right people per path.</div></div>
+      <div class="rf-item"><div class="q">GitHub Flow vs Git Flow?</div><div class="a">Continuous deploy, single main vs structured release branches.</div></div>
+      <div class="rf-item"><div class="q">What's squash-merge?</div><div class="a">Collapses a PR's commits into one clean commit on merge.</div></div>
+      <div class="rf-item"><div class="q">Why use OIDC in Actions?</div><div class="a">Avoids storing static cloud credentials as secrets.</div></div>
+      <div class="rf-item"><div class="q">What's a Git object identified by?</div><div class="a">SHA hash of its content.</div></div>
+      <div class="rf-item"><div class="q">Safer force-push flag?</div><div class="a"><code>--force-with-lease</code>.</div></div>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section id="s18">
+    <div class="eyebrow">18</div>
+    <h2>Cheat sheet</h2>
+    <div class="card">
+      <h4 style="margin-top:0;">Daily flow</h4>
+      <p style="font-size:13.5px;"><code>git switch -c feature-x</code> → edit → <code>git add -p</code> → <code>git commit -m "..."</code> → <code>git push -u origin feature-x</code> → open PR → address review → squash-merge</p>
+      <h4>Undo table</h4>
+      <p style="font-size:13.5px;">Uncommitted, unwanted → <code>git restore &lt;file&gt;</code> · Staged, want to unstage → <code>git restore --staged &lt;file&gt;</code> · Local commit, not pushed → <code>git reset --soft HEAD~1</code> · Already pushed, shared → <code>git revert &lt;sha&gt;</code></p>
+      <h4>Recovery lifeline</h4>
+      <p style="font-size:13.5px;"><code>git reflog</code> → find the SHA before things went wrong → <code>git reset --hard &lt;sha&gt;</code> or <code>git cherry-pick &lt;sha&gt;</code></p>
+      <h4>Inspect internals</h4>
+      <p style="font-size:13.5px;"><code>git cat-file -p &lt;sha&gt;</code> · <code>git log --oneline --graph --all</code> · <code>git show &lt;sha&gt;</code> · <code>git blame &lt;file&gt;</code></p>
+      <h4>Golden rules</h4>
+      <p style="font-size:13.5px;">Never rebase shared history · always <code>--force-with-lease</code>, never bare <code>--force</code> · <code>revert</code> for shared history, <code>reset</code> only for local · commit early, commit often, push regularly</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>Git & GitHub Field Guide · reference document · verify current GitHub feature availability/UI against official docs, as these evolve over time</footer>
+
+</main>
+
+</body>
+</html>

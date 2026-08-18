@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS IAM — Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --panel:#101A2E;
+    --panel-2:#0D1728;
+    --line:#1E2C46;
+    --text:#E8ECF3;
+    --muted:#8B9BB4;
+    --dim:#5E7093;
+    --amber:#F0A202;
+    --amber-dim:#8A6318;
+    --teal:#2DD4BF;
+    --teal-dim:#125F56;
+    --red:#F0555F;
+    --green:#5FD97D;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(45,212,191,0.08), transparent 60%),
+      radial-gradient(1000px 500px at -10% 20%, rgba(240,162,2,0.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    display:flex;
+    min-height:100vh;
+  }
+  ::selection{ background:var(--amber-dim); color:#fff; }
+
+  code, .mono{ font-family:'JetBrains Mono', monospace; }
+
+  /* Sidebar */
+  nav.sidebar{
+    width:260px;
+    flex-shrink:0;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding:28px 20px;
+    background:var(--panel-2);
+    border-right:1px solid var(--line);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:6px;
+  }
+  .brand .dot{
+    width:10px; height:10px; border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 12px rgba(240,162,2,0.7);
+  }
+  .brand span{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.02em;
+  }
+  .brand-sub{
+    font-size:11px; color:var(--dim); margin-bottom:28px; margin-left:20px;
+    text-transform:uppercase; letter-spacing:0.08em;
+  }
+  .navlist{ list-style:none; }
+  .navlist li{ margin-bottom:2px; }
+  .navlist a{
+    display:block;
+    color:var(--muted);
+    text-decoration:none;
+    font-size:13.5px;
+    padding:7px 10px;
+    border-radius:6px;
+    border-left:2px solid transparent;
+    transition:all .15s ease;
+  }
+  .navlist a:hover{
+    color:var(--text);
+    background:rgba(255,255,255,0.03);
+    border-left-color:var(--teal);
+  }
+  .navlist .grp{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.09em;
+    color:var(--dim);
+    margin:18px 0 6px 10px;
+  }
+  .navlist .grp:first-child{ margin-top:0; }
+
+  /* Main */
+  main{ flex:1; min-width:0; }
+  .wrap{ max-width:920px; margin:0 auto; padding:64px 48px 120px; }
+
+  section{ scroll-margin-top:24px; margin-bottom:88px; }
+  section:last-child{ margin-bottom:40px; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--teal);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    margin-bottom:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px; height:1px;
+    background:var(--teal);
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:44px;
+    line-height:1.1;
+    letter-spacing:-0.01em;
+    margin-bottom:18px;
+  }
+  h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:-0.005em;
+    margin-bottom:16px;
+    color:var(--text);
+  }
+  h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:17px;
+    margin-bottom:10px;
+    color:var(--text);
+  }
+  p{ color:var(--muted); font-size:15px; margin-bottom:14px; max-width:70ch; }
+  p strong{ color:var(--text); font-weight:600; }
+  .lede{ font-size:17px; color:var(--muted); max-width:62ch; }
+
+  a.inline{ color:var(--teal); text-decoration:none; border-bottom:1px solid var(--teal-dim); }
+
+  /* Hero */
+  .hero{
+    padding-top:8px;
+  }
+  .hero-tags{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:22px;
+  }
+  .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    padding:5px 10px;
+    border-radius:100px;
+    border:1px solid var(--line);
+    color:var(--muted);
+    background:var(--panel);
+  }
+
+  /* Cards */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+  }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:760px){ .grid2, .grid3{ grid-template-columns:1fr; } }
+
+  .concept-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .concept-card::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, var(--amber), transparent);
+  }
+  .concept-card .icon{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--amber);
+    background:rgba(240,162,2,0.1);
+    border:1px solid var(--amber-dim);
+    display:inline-block;
+    padding:3px 8px;
+    border-radius:5px;
+    margin-bottom:12px;
+  }
+  .concept-card p{ font-size:13.5px; margin-bottom:8px; }
+  .concept-card .use{
+    font-size:12.5px;
+    color:var(--dim);
+    border-top:1px dashed var(--line);
+    padding-top:10px;
+    margin-top:10px;
+  }
+  .concept-card .use b{ color:var(--teal); font-weight:600; }
+
+  /* Diagram */
+  .diagram-frame{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin:20px 0;
+  }
+  .diagram-frame svg{ width:100%; height:auto; display:block; }
+  .diagram-caption{
+    font-size:12px; color:var(--dim); margin-top:12px; text-align:center;
+    font-family:'JetBrains Mono', monospace;
+  }
+
+  /* Table */
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; margin:14px 0 24px; }
+  th{
+    text-align:left; color:var(--dim); font-weight:600;
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:0.05em;
+    padding:10px 12px; border-bottom:1px solid var(--line);
+  }
+  td{
+    padding:12px; border-bottom:1px solid var(--line);
+    color:var(--muted); vertical-align:top;
+  }
+  td strong, td.strong{ color:var(--text); }
+  tr:last-child td{ border-bottom:none; }
+  td code{ color:var(--teal); background:rgba(45,212,191,0.08); padding:2px 6px; border-radius:4px; font-size:12.5px; }
+
+  /* Code block */
+  .codeblock{
+    background:#0A1120;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px 18px;
+    overflow-x:auto;
+    margin:14px 0 20px;
+    position:relative;
+  }
+  .codeblock .fname{
+    position:absolute; top:10px; right:14px;
+    font-size:10.5px; color:var(--dim); font-family:'JetBrains Mono',monospace;
+  }
+  .codeblock pre{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    line-height:1.7;
+    color:#C9D6E8;
+    white-space:pre;
+  }
+  .codeblock .k{ color:var(--amber); }
+  .codeblock .s{ color:var(--teal); }
+  .codeblock .c{ color:var(--dim); }
+
+  /* Callouts */
+  .callout{
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin:18px 0;
+    border:1px solid;
+    font-size:14px;
+  }
+  .callout p{ margin-bottom:0; font-size:14px; }
+  .callout .lbl{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    margin-bottom:6px; display:block; font-weight:700;
+  }
+  .callout.good{ background:rgba(95,217,125,0.06); border-color:rgba(95,217,125,0.3); }
+  .callout.good .lbl{ color:var(--green); }
+  .callout.bad{ background:rgba(240,85,95,0.06); border-color:rgba(240,85,95,0.3); }
+  .callout.bad .lbl{ color:var(--red); }
+  .callout.warn{ background:rgba(240,162,2,0.06); border-color:rgba(240,162,2,0.3); }
+  .callout.warn .lbl{ color:var(--amber); }
+  .callout.info{ background:rgba(45,212,191,0.06); border-color:rgba(45,212,191,0.3); }
+  .callout.info .lbl{ color:var(--teal); }
+
+  /* Checklist */
+  ul.checklist{ list-style:none; margin:14px 0 22px; }
+  ul.checklist li{
+    font-size:14px; color:var(--muted); padding:9px 0 9px 30px;
+    border-bottom:1px solid var(--line); position:relative;
+  }
+  ul.checklist li:last-child{ border-bottom:none; }
+  ul.checklist li::before{
+    content:"✓";
+    position:absolute; left:0; top:9px;
+    color:var(--green); font-weight:700;
+    font-family:'JetBrains Mono',monospace; font-size:13px;
+  }
+  ul.checklist li strong{ color:var(--text); }
+
+  ul.plain{ margin:10px 0 18px 0; padding-left:20px; }
+  ul.plain li{ color:var(--muted); font-size:14.5px; margin-bottom:8px; }
+  ul.plain li strong{ color:var(--text); }
+
+  /* Interview accordion */
+  .qa{
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:10px;
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .qa summary{
+    list-style:none;
+    cursor:pointer;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--text);
+  }
+  .qa summary::-webkit-details-marker{ display:none; }
+  .qa summary .qnum{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--amber);
+    font-size:12.5px;
+    flex-shrink:0;
+    width:28px;
+  }
+  .qa summary .chev{
+    margin-left:auto;
+    color:var(--dim);
+    transition:transform .2s ease;
+    font-size:12px;
+  }
+  .qa[open] summary .chev{ transform:rotate(90deg); color:var(--teal); }
+  .qa .a{
+    padding:0 20px 20px 62px;
+    font-size:14px;
+    color:var(--muted);
+  }
+  .qa .a p{ font-size:14px; margin-bottom:10px; }
+  .qa .diff{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    padding:3px 8px; border-radius:4px; margin-left:auto;
+    text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .qa summary{ position:relative; }
+  .diff.easy{ background:rgba(95,217,125,0.12); color:var(--green); }
+  .diff.mid{ background:rgba(240,162,2,0.12); color:var(--amber); }
+  .diff.hard{ background:rgba(240,85,95,0.12); color:var(--red); }
+
+  /* Service matrix */
+  .svc-row{
+    display:grid;
+    grid-template-columns:160px 1fr;
+    gap:20px;
+    padding:18px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .svc-row:last-child{ border-bottom:none; }
+  .svc-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    color:var(--text);
+    display:flex; align-items:center; gap:8px;
+  }
+  .svc-name .sw{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .svc-row p{ font-size:13.5px; margin-bottom:0; }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:32px 48px;
+    max-width:920px;
+    margin:0 auto;
+    color:var(--dim);
+    font-size:12.5px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  @media (max-width:900px){
+    nav.sidebar{ display:none; }
+    .wrap{ padding:40px 22px 100px; }
+    h1{ font-size:32px; }
+    .grid3{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="brand"><div class="dot"></div><span>AWS IAM</span></div>
+  <div class="brand-sub">Field Guide</div>
+  <ul class="navlist">
+    <li class="grp">Foundations</li>
+    <li><a href="#what-is-iam">What is IAM</a></li>
+    <li><a href="#core-concepts">Core concepts</a></li>
+    <li class="grp">Architecture</li>
+    <li><a href="#interconnect">Service interconnections</a></li>
+    <li><a href="#service-matrix">Service-by-service</a></li>
+    <li class="grp">Practice</li>
+    <li><a href="#least-privilege">Least privilege</a></li>
+    <li><a href="#when-to-use">When to use what</a></li>
+    <li><a href="#production">Production checklist</a></li>
+    <li><a href="#policy-example">Sample policy</a></li>
+    <li class="grp">Interview Prep</li>
+    <li><a href="#interview">Q&amp;A</a></li>
+  </ul>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" id="top">
+    <div class="eyebrow">AWS · Identity & Access Management</div>
+    <h1>IAM is the front door<br>every other service checks.</h1>
+    <p class="lede">IAM doesn't store your data, run your compute, or route your traffic — it decides <em>who</em> is allowed to touch the services that do. Every API call anywhere in AWS is first stopped and asked for ID. This guide covers what IAM actually is, how it wires into the rest of the AWS service graph, when to reach for which primitive, and the production patterns (and interview questions) that separate "I've used IAM" from "I understand IAM."</p>
+    <div class="hero-tags">
+      <span class="tag">Users · Groups · Roles</span>
+      <span class="tag">Policies (JSON)</span>
+      <span class="tag">STS / AssumeRole</span>
+      <span class="tag">Least Privilege</span>
+      <span class="tag">Global service</span>
+    </div>
+  </section>
+
+  <section id="what-is-iam">
+    <div class="eyebrow">01 · Definition</div>
+    <h2>What IAM actually is</h2>
+    <p><strong>IAM (Identity and Access Management)</strong> is AWS's global, free authentication and authorization service. It answers two questions on every single request made to AWS, whether it comes from the console, the CLI, an SDK, or another AWS service: <strong>"who are you?"</strong> (authentication) and <strong>"what are you allowed to do?"</strong> (authorization).</p>
+    <p>It is not tied to a region — IAM is a <strong>global service</strong>. A user or role you create is visible and usable from every region simultaneously. IAM itself doesn't do anything to your resources; it only evaluates policy documents and returns <code style="color:var(--teal)">Allow</code> or <code style="color:var(--red)">Deny</code> before the target service (S3, EC2, Lambda, etc.) is permitted to execute the request.</p>
+
+    <div class="callout info">
+      <span class="lbl">Mental model</span>
+      <p>Think of every AWS API call as a locked door. IAM is the security guard standing in front of <em>every</em> door in AWS — S3 buckets, EC2 instances, Lambda functions, RDS snapshots, everything. The guard doesn't own the room; it just checks the badge (identity) against the access list (policy) before letting the request through.</p>
+    </div>
+  </section>
+
+  <section id="core-concepts">
+    <div class="eyebrow">02 · Building blocks</div>
+    <h2>Core concepts</h2>
+    <p>Five primitives make up almost everything you do in IAM. Understanding how they compose is more important than memorizing any one of them.</p>
+
+    <div class="grid3" style="margin-top:20px;">
+      <div class="concept-card">
+        <span class="icon">IDENTITY</span>
+        <h3>User</h3>
+        <p>A persistent identity for a person or application. Has long-lived credentials (password, access keys).</p>
+        <div class="use"><b>Use when</b> you have a real human who needs console access, or a genuine standalone identity that isn't running inside AWS compute.</div>
+      </div>
+      <div class="concept-card">
+        <span class="icon">IDENTITY</span>
+        <h3>Group</h3>
+        <p>A named collection of users. Policies attached to a group apply to every member. Not a true identity — can't be assumed or referenced in a policy's Principal.</p>
+        <div class="use"><b>Use when</b> managing permissions for teams (e.g. "Developers", "Billing-Admins") instead of per-user.</div>
+      </div>
+      <div class="concept-card">
+        <span class="icon">IDENTITY</span>
+        <h3>Role</h3>
+        <p>A temporary identity with a trust policy defining who/what can assume it, and a permissions policy defining what it can do once assumed. No long-lived credentials.</p>
+        <div class="use"><b>Use when</b> AWS services need permissions (EC2, Lambda), for federation/SSO, or cross-account access.</div>
+      </div>
+      <div class="concept-card">
+        <span class="icon">DOCUMENT</span>
+        <h3>Policy (JSON)</h3>
+        <p>A document of statements — <code style="color:var(--teal)">Effect</code>, <code style="color:var(--teal)">Action</code>, <code style="color:var(--teal)">Resource</code>, optional <code style="color:var(--teal)">Condition</code> — that grants or denies specific API actions on specific resources.</p>
+        <div class="use"><b>Use when</b> defining exactly what an identity can do. Managed (reusable) or inline (one-to-one).</div>
+      </div>
+      <div class="concept-card">
+        <span class="icon">SERVICE</span>
+        <h3>STS</h3>
+        <p>Security Token Service — issues short-lived credentials (typically 15 min–12 hr) when a role is assumed via <code style="color:var(--teal)">AssumeRole</code>, <code style="color:var(--teal)">AssumeRoleWithSAML</code>, or <code style="color:var(--teal)">AssumeRoleWithWebIdentity</code>.</p>
+        <div class="use"><b>Use when</b> any cross-account access, federation, or service-to-service call happens — this is the engine behind roles.</div>
+      </div>
+      <div class="concept-card">
+        <span class="icon">SCOPE</span>
+        <h3>Resource-based policy</h3>
+        <p>A policy attached directly to a resource (S3 bucket policy, KMS key policy, Lambda resource policy) rather than to an identity. Defines who can access <em>that resource</em>, from any account.</p>
+        <div class="use"><b>Use when</b> granting access from a different AWS account without assuming a role in your account.</div>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:24px;">
+      <span class="lbl">Policy evaluation order</span>
+      <p>An explicit <strong>Deny always wins</strong>, regardless of how many Allows exist elsewhere. If no explicit statement matches, the default is implicit Deny. Final decision = evaluate every applicable identity-based policy, resource-based policy, permissions boundary, SCP (Organizations), and session policy together — the request is allowed only if nothing in that whole set denies it and at least one thing allows it.</p>
+    </div>
+  </section>
+
+  <section id="interconnect">
+    <div class="eyebrow">03 · Architecture</div>
+    <h2>How IAM sits in the AWS service graph</h2>
+    <p>IAM has no traffic of its own — it's a control-plane dependency that every other service calls into before doing anything. The diagram below shows the shape of that relationship: IAM at the center, issuing identity and evaluating policy for the services around it.</p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#2DD4BF" opacity="0.7"/>
+          </marker>
+        </defs>
+
+        <!-- connecting lines -->
+        <g stroke="#22314f" stroke-width="1.4" fill="none">
+          <line x1="430" y1="280" x2="140" y2="90"/>
+          <line x1="430" y1="280" x2="430" y2="60"/>
+          <line x1="430" y1="280" x2="720" y2="90"/>
+          <line x1="430" y1="280" x2="100" y2="280"/>
+          <line x1="430" y1="280" x2="760" y2="280"/>
+          <line x1="430" y1="280" x2="140" y2="470"/>
+          <line x1="430" y1="280" x2="430" y2="500"/>
+          <line x1="430" y1="280" x2="720" y2="470"/>
+        </g>
+        <g stroke="#2DD4BF" stroke-width="1.2" stroke-dasharray="4 5" opacity="0.55" fill="none">
+          <line x1="430" y1="280" x2="140" y2="90" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="430" y2="60" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="720" y2="90" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="100" y2="280" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="760" y2="280" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="140" y2="470" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="430" y2="500" marker-end="url(#arrow)"/>
+          <line x1="430" y1="280" x2="720" y2="470" marker-end="url(#arrow)"/>
+        </g>
+
+        <!-- center: IAM -->
+        <g>
+          <circle cx="430" cy="280" r="62" fill="#0D1728" stroke="#F0A202" stroke-width="2"/>
+          <text x="430" y="276" text-anchor="middle" fill="#F0A202" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="19">IAM</text>
+          <text x="430" y="296" text-anchor="middle" fill="#8B9BB4" font-family="JetBrains Mono, monospace" font-size="9">policy engine</text>
+        </g>
+
+        <!-- nodes -->
+        <!-- EC2 -->
+        <g>
+          <rect x="70" y="60" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="140" y="86" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">EC2</text>
+          <text x="140" y="103" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">instance profile</text>
+        </g>
+        <!-- CloudTrail -->
+        <g>
+          <rect x="360" y="10" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="430" y="36" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">CloudTrail</text>
+          <text x="430" y="53" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">logs every call</text>
+        </g>
+        <!-- Lambda -->
+        <g>
+          <rect x="650" y="60" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="720" y="86" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">Lambda</text>
+          <text x="720" y="103" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">execution role</text>
+        </g>
+        <!-- S3 -->
+        <g>
+          <rect x="20" y="250" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="90" y="276" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">S3</text>
+          <text x="90" y="293" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">bucket policy</text>
+        </g>
+        <!-- KMS -->
+        <g>
+          <rect x="690" y="250" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="760" y="276" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">KMS</text>
+          <text x="760" y="293" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">key policy</text>
+        </g>
+        <!-- Organizations -->
+        <g>
+          <rect x="70" y="440" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="140" y="466" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">Organizations</text>
+          <text x="140" y="483" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">SCP guardrails</text>
+        </g>
+        <!-- STS/Cognito -->
+        <g>
+          <rect x="360" y="470" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="430" y="496" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">STS / Cognito</text>
+          <text x="430" y="513" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">federation</text>
+        </g>
+        <!-- EKS -->
+        <g>
+          <rect x="650" y="440" width="140" height="60" rx="8" fill="#101A2E" stroke="#1E2C46"/>
+          <text x="720" y="466" text-anchor="middle" fill="#E8ECF3" font-family="Space Grotesk, sans-serif" font-weight="600" font-size="13">EKS</text>
+          <text x="720" y="483" text-anchor="middle" fill="#5E7093" font-family="JetBrains Mono, monospace" font-size="9">IRSA (OIDC)</text>
+        </g>
+      </svg>
+      <div class="diagram-caption">IAM as the hub — every spoke either issues an identity through IAM or is gated by an IAM-evaluated policy</div>
+    </div>
+  </section>
+
+  <section id="service-matrix">
+    <div class="eyebrow">04 · Detail</div>
+    <h2>Service-by-service: how the connection actually works</h2>
+
+    <div class="card">
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#F0A202"></span>EC2</div>
+        <p>An EC2 instance never holds AWS credentials as files. Instead you attach an <strong>instance profile</strong> (a wrapper around an IAM role) to the instance. The instance metadata service (IMDS) hands the OS temporary STS credentials automatically, refreshed continuously. This is how an app on the box calls S3 or DynamoDB without a single hardcoded key.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#2DD4BF"></span>Lambda</div>
+        <p>Every function has exactly one <strong>execution role</strong>. IAM grants the function permission to write to CloudWatch Logs, and separately whatever downstream permissions it needs (e.g. <code>dynamodb:PutItem</code>). The trust policy on the role must allow <code>lambda.amazonaws.com</code> to assume it, or the function fails to even start.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#5FD97D"></span>S3</div>
+        <p>S3 is checked twice: the caller's <strong>identity-based policy</strong> (does the user/role have <code>s3:GetObject</code>?) and the bucket's own <strong>resource-based policy</strong> (does the bucket allow this principal?). Cross-account S3 access is the classic case where the bucket policy does the heavy lifting instead of a role.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#F0555F"></span>KMS</div>
+        <p>Every KMS key has a <strong>key policy</strong> that is the root authorization — even an admin with full IAM permissions can't use a key unless the key policy also allows it. This is intentional: it's the one place where IAM alone is not sufficient, by design, to prevent a compromised IAM admin from silently granting themselves decrypt access.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#8B9BB4"></span>CloudTrail</div>
+        <p>Records every IAM-mediated API call — who (identity), what (action), when, from where (source IP), and the result (allow/deny). It's the audit trail that makes IAM decisions forensically reviewable, and it is itself protected by IAM permissions on who can read or disable it.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#F0A202"></span>Organizations</div>
+        <p><strong>Service Control Policies (SCPs)</strong> apply at the account/OU level and set the outer boundary — they never grant permissions, only restrict the maximum an account can ever allow, no matter what an in-account IAM policy says. A permissive IAM policy inside an account still fails if an SCP denies it above.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#2DD4BF"></span>EKS (IRSA)</div>
+        <p>Kubernetes pods assume IAM roles via <strong>IAM Roles for Service Accounts</strong> — an OIDC identity provider trust relationship maps a Kubernetes service account to an IAM role, so individual pods get scoped, short-lived AWS credentials instead of the whole node sharing one broad role.</p>
+      </div>
+      <div class="svc-row">
+        <div class="svc-name"><span class="sw" style="background:#5FD97D"></span>STS / Cognito / SSO</div>
+        <p>STS is the credential-issuing engine behind every role assumption. Cognito Identity Pools and IAM Identity Center (SSO) both federate an external identity (a corporate directory, a social login, a SAML IdP) into a temporary STS-issued IAM role session — no IAM user is ever created for the end human.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="least-privilege">
+    <div class="eyebrow">05 · Principle</div>
+    <h2>Least privilege, in practice</h2>
+    <p><strong>Least privilege</strong> means granting exactly the permissions required to perform a task — no more. It's the single most-repeated IAM principle because violating it is the single most common root cause of AWS security incidents (leaked keys with admin access, an over-permissioned Lambda reading a whole account's S3 data, etc.).</p>
+
+    <h3 style="margin-top:26px;">How to actually implement it</h3>
+    <ul class="checklist">
+      <li><strong>Start from zero, not from Admin.</strong> Begin with an empty policy and add actions as they're proven necessary, rather than starting broad and trying to trim later (trimming almost never happens).</li>
+      <li><strong>Use IAM Access Analyzer's policy generation.</strong> Point it at CloudTrail logs for an identity over 90 days and it will generate a policy containing only the actions actually used.</li>
+      <li><strong>Scope the Resource field.</strong> Avoid <code>"Resource": "*"</code>. Restrict to specific ARNs — a specific bucket, a specific table, a specific key — not the whole service.</li>
+      <li><strong>Add Conditions.</strong> Restrict by source IP (<code>aws:SourceIp</code>), MFA presence (<code>aws:MultiFactorAuthPresent</code>), time window, or requested region to shrink the blast radius even for an allowed action.</li>
+      <li><strong>Use permissions boundaries for delegated admin.</strong> If you let a team create their own roles, a permissions boundary caps the maximum permission any role they create can ever have.</li>
+      <li><strong>Review with Access Analyzer continuously.</strong> It flags unused permissions and external-account access on an ongoing basis, not just at creation time.</li>
+      <li><strong>Prefer roles over long-lived user keys everywhere possible.</strong> A role's credentials expire on their own; a leaked access key doesn't expire until someone notices and rotates it.</li>
+    </ul>
+
+    <div class="grid2">
+      <div class="callout bad">
+        <span class="lbl">Anti-pattern</span>
+        <p><code>"Action": "s3:*", "Resource": "*"</code> attached to an application role because it was faster than figuring out the three actions it actually needed.</p>
+      </div>
+      <div class="callout good">
+        <span class="lbl">Least privilege</span>
+        <p><code>"Action": ["s3:GetObject","s3:PutObject"], "Resource": "arn:aws:s3:::app-uploads-bucket/*"</code> — scoped to the exact bucket and the exact two actions the app calls.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="when-to-use">
+    <div class="eyebrow">06 · Decision guide</div>
+    <h2>When to use what</h2>
+    <table>
+      <tr><th>Situation</th><th>Use</th><th>Why</th></tr>
+      <tr>
+        <td class="strong">A human needs console/CLI access</td>
+        <td><code>IAM Identity Center (SSO)</code></td>
+        <td>Federated, centrally managed, short-lived sessions — avoids standing IAM users entirely. Fall back to an IAM user only for legacy cases.</td>
+      </tr>
+      <tr>
+        <td class="strong">An AWS service needs to act on your behalf</td>
+        <td><code>IAM Role</code></td>
+        <td>No credentials to store or rotate; the service assumes the role and STS issues temporary creds automatically.</td>
+      </tr>
+      <tr>
+        <td class="strong">Cross-account access (e.g. central logging account)</td>
+        <td><code>Role + trust policy</code> or <code>resource policy</code></td>
+        <td>A role in Account B trusts Account A's principal; or the resource (bucket, key) in Account B grants Account A directly.</td>
+      </tr>
+      <tr>
+        <td class="strong">A third-party SaaS needs limited access to your account</td>
+        <td><code>Role + External ID condition</code></td>
+        <td>Prevents the "confused deputy" problem — the external ID must match or the assumption fails, even if the role ARN leaks.</td>
+      </tr>
+      <tr>
+        <td class="strong">A CI/CD pipeline (e.g. GitHub Actions) needs to deploy</td>
+        <td><code>OIDC federation to a role</code></td>
+        <td>No long-lived AWS keys stored as CI secrets at all — the pipeline exchanges its own OIDC token for temporary AWS credentials.</td>
+      </tr>
+      <tr>
+        <td class="strong">You need to grant the same permission set to many users</td>
+        <td><code>Group</code></td>
+        <td>Attach the policy once to the group; add/remove members instead of managing permissions per user.</td>
+      </tr>
+      <tr>
+        <td class="strong">You need an org-wide guardrail no account can override</td>
+        <td><code>SCP (Organizations)</code></td>
+        <td>Sets a hard ceiling below which even an account's own Administrator can't grant more, e.g. "never allow leaving the org's approved regions."</td>
+      </tr>
+      <tr>
+        <td class="strong">One-off, narrow permission tied to a single resource</td>
+        <td><code>Inline policy</code></td>
+        <td>Lives and dies with the identity — no risk of an orphaned managed policy being reused somewhere unexpected.</td>
+      </tr>
+      <tr>
+        <td class="strong">Reusable permission set across many identities</td>
+        <td><code>Customer-managed policy</code></td>
+        <td>Versioned, attachable to many roles/users/groups, and centrally auditable — the standard for production.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section id="production">
+    <div class="eyebrow">07 · Operations</div>
+    <h2>Production-level checklist</h2>
+    <p>What experienced AWS teams actually enforce day to day — this is the list an interviewer is hoping you'll bring up unprompted.</p>
+    <ul class="checklist">
+      <li><strong>Root account is locked down.</strong> MFA enabled (hardware key ideally), no access keys ever generated, used only for the handful of tasks that truly require root.</li>
+      <li><strong>No standing IAM users for humans.</strong> Access goes through IAM Identity Center / federated SSO with short-lived sessions.</li>
+      <li><strong>MFA enforced everywhere it's supported</strong>, and sensitive actions gated behind a <code>aws:MultiFactorAuthPresent</code> condition.</li>
+      <li><strong>Access keys, if they must exist, are rotated on a schedule</strong> and monitored by IAM Access Analyzer / Credential Reports for staleness.</li>
+      <li><strong>Multi-account structure via AWS Organizations</strong>, with SCPs as the outer guardrail, not single-account IAM sprawl.</li>
+      <li><strong>Every policy is scoped with explicit Resource ARNs and Conditions</strong> — wildcards are a flagged exception, not the default.</li>
+      <li><strong>CloudTrail is on in every account and region</strong>, delivered to a centralized, access-restricted logging account, with log-file validation enabled.</li>
+      <li><strong>Permissions boundaries used for any self-service role creation</strong> (e.g. a platform team letting app teams create their own roles).</li>
+      <li><strong>Break-glass access is documented and tested</strong> — an emergency admin path that's audited and alerted on every time it's used.</li>
+      <li><strong>Regular access reviews</strong> — unused roles, unused permissions, and stale users get flagged and removed, not left "just in case."</li>
+    </ul>
+  </section>
+
+  <section id="policy-example">
+    <div class="eyebrow">08 · Reference</div>
+    <h2>A least-privilege policy, annotated</h2>
+    <p>A role for an application that only needs to read from one S3 prefix and write logs — nothing else.</p>
+    <div class="codeblock">
+      <span class="fname">app-read-only-policy.json</span>
+<pre>{
+  <span class="k">"Version"</span>: <span class="s">"2012-10-17"</span>,
+  <span class="k">"Statement"</span>: [
+    {
+      <span class="k">"Sid"</span>: <span class="s">"ReadOnlyUploadsPrefix"</span>,
+      <span class="k">"Effect"</span>: <span class="s">"Allow"</span>,
+      <span class="k">"Action"</span>: [<span class="s">"s3:GetObject"</span>, <span class="s">"s3:ListBucket"</span>],
+      <span class="k">"Resource"</span>: [
+        <span class="s">"arn:aws:s3:::prod-app-uploads"</span>,
+        <span class="s">"arn:aws:s3:::prod-app-uploads/reports/*"</span>
+      ],
+      <span class="k">"Condition"</span>: {
+        <span class="k">"StringEquals"</span>: { <span class="k">"aws:PrincipalOrgID"</span>: <span class="s">"o-exampleorgid"</span> },
+        <span class="k">"Bool"</span>: { <span class="k">"aws:SecureTransport"</span>: <span class="s">"true"</span> }
+      }
+    },
+    {
+      <span class="k">"Sid"</span>: <span class="s">"WriteOwnLogs"</span>,
+      <span class="k">"Effect"</span>: <span class="s">"Allow"</span>,
+      <span class="k">"Action"</span>: <span class="s">"logs:PutLogEvents"</span>,
+      <span class="k">"Resource"</span>: <span class="s">"arn:aws:logs:*:111122223333:log-group:/app/prod:*"</span>
+    }
+  ]
+}</pre>
+    </div>
+    <p style="font-size:13px;">Notice: no <code style="color:var(--teal)">*</code> resources, an explicit prefix, a transport-security condition, and an org-membership condition — three independent narrowing mechanisms stacked on top of the base action grant.</p>
+  </section>
+
+  <section id="interview">
+    <div class="eyebrow">09 · Interview Prep</div>
+    <h2>Interview questions &amp; answers</h2>
+    <p>Ordered roughly easy → hard. Click to expand.</p>
+
+    <details class="qa">
+      <summary><span class="qnum">Q1</span>What's the difference between an IAM user and an IAM role?<span class="diff easy">Easy</span><span class="chev">▸</span></summary>
+      <div class="a"><p>A user is a permanent identity with long-lived credentials (password and/or access keys) meant for a specific person or app. A role has no permanent credentials — it's assumed, and STS issues temporary credentials that expire. Roles are the preferred mechanism for anything that can assume one: AWS services, federated humans, cross-account access, and CI/CD.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q2</span>What happens when an Allow and a Deny both apply to the same request?<span class="diff easy">Easy</span><span class="chev">▸</span></summary>
+      <div class="a"><p>Deny always wins. IAM's evaluation logic is: start with implicit deny, look for any explicit Deny across all applicable policies (identity, resource, SCP, permissions boundary, session policy) — if found, deny immediately regardless of any Allow. Otherwise, allow only if at least one explicit Allow exists.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q3</span>Why is IAM described as a "global" service rather than regional?<span class="diff easy">Easy</span><span class="chev">▸</span></summary>
+      <div class="a"><p>IAM identities, policies, and roles aren't created per-region — they exist account-wide and are usable from any region without replication. This is different from most AWS services (EC2, RDS, S3 buckets to a degree) which are regional or have regional endpoints.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q4</span>Explain the difference between an identity-based policy and a resource-based policy.<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+      <div class="a"><p>An identity-based policy is attached to a user, group, or role and defines what that identity can do. A resource-based policy is attached directly to a resource (S3 bucket, KMS key, SQS queue, Lambda function) and defines who can access that specific resource — critically, it can grant access to a principal in a <em>different</em> AWS account without that account needing to assume a role in yours. S3 bucket policies and KMS key policies are the two most common examples.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q5</span>How would you grant a Lambda function in Account A access to an S3 bucket in Account B?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+      <div class="a"><p>Two pieces are both required: the Lambda's execution role in Account A needs an identity-based policy allowing <code>s3:GetObject</code> on the bucket's ARN, <strong>and</strong> the bucket policy in Account B needs a statement allowing Account A's role ARN as a principal. Either one alone is insufficient — cross-account access needs both sides to agree.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q6</span>What is a permissions boundary and how is it different from a regular policy?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+      <div class="a"><p>A permissions boundary is an advanced feature that sets the <em>maximum</em> permissions an identity-based policy can grant to a user or role — it never grants permissions by itself, only caps them. It's typically used when delegating role/user creation to a team: even if that team writes an overly broad policy, the boundary prevents it from exceeding the ceiling you set.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q7</span>What's the difference between a Service Control Policy (SCP) and an IAM policy?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+      <div class="a"><p>An SCP is applied at the AWS Organizations level (account or OU) and, like a permissions boundary, only restricts — it never grants. It sets the outer limit for every identity in every account under it, including that account's own root user and admins. An IAM policy is applied inside a single account and can actually grant permissions, but only within whatever ceiling the SCP above it allows.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q8</span>How does an EC2 instance get AWS credentials without anyone hardcoding them?<span class="diff mid">Medium</span><span class="chev">▸</span></summary>
+      <div class="a"><p>You attach an instance profile (which wraps an IAM role) to the instance. The Instance Metadata Service (IMDS) running on the instance exposes temporary STS credentials at a local endpoint, which the AWS SDK automatically discovers and refreshes before they expire — typically every few hours. Nothing is written to disk as a static key.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q9</span>Why can't an IAM administrator automatically decrypt data protected by any KMS key?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+      <div class="a"><p>KMS key policies are the root of authorization for a key and are evaluated independently of standard IAM logic — even a user with <code>iam:*</code> and <code>kms:*</code> permissions cannot use a key unless the key's own policy grants that principal (or grants IAM policies the right to govern it, if the key policy delegates that). This is a deliberate separation-of-duties control so that compromising IAM administration alone doesn't automatically expose all encrypted data.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q10</span>What's the "confused deputy" problem and how does IAM address it?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+      <div class="a"><p>It's when a third party is tricked into misusing its own legitimate permissions on your behalf — e.g. a SaaS vendor has a role in your account, and an attacker who knows that role's ARN convinces the vendor's system to assume it against a different, unintended customer. IAM addresses this with the <code>sts:ExternalId</code> condition: you generate a unique external ID and require it in the trust policy, so a role assumption request without the correct external ID fails, even with the right role ARN.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q11</span>Walk through what happens, step by step, when a federated user logs in via SSO and calls an AWS API.<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+      <div class="a"><p>The user authenticates against the external identity provider (Okta, Azure AD, etc.). The IdP issues a SAML assertion or OIDC token. IAM Identity Center (or a direct SAML/OIDC trust) validates that token and calls STS's <code>AssumeRoleWithSAML</code> or <code>AssumeRoleWithWebIdentity</code>. STS checks the role's trust policy to confirm the IdP is trusted, then issues temporary credentials (access key, secret key, session token) scoped to that role's permissions policy. The user's CLI/SDK uses those temporary credentials for the API call, which IAM evaluates against the role's permissions exactly as it would for any other identity.</p></div>
+    </details>
+
+    <details class="qa">
+      <summary><span class="qnum">Q12</span>How would you design least-privilege access for a CI/CD pipeline that deploys to production?<span class="diff hard">Hard</span><span class="chev">▸</span></summary>
+      <div class="a"><p>Avoid static AWS keys stored as CI secrets entirely — configure OIDC federation between the CI provider (e.g. GitHub Actions) and an IAM role, so the pipeline exchanges a short-lived OIDC token for temporary STS credentials on every run. Scope the role's trust policy with a condition restricting it to a specific repo and branch, scope the permissions policy to exactly the deploy actions and resources needed (e.g. specific CloudFormation stack, specific S3 deployment bucket), and separate roles per environment so a compromised staging pipeline can't touch production.</p></div>
+    </details>
+  </section>
+
+</div>
+
+<footer>AWS IAM Field Guide · reference document · verify current service limits and API details against official AWS documentation before production use</footer>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Interview Prep — Karini AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1F3864;
+    --navy-dark:#132445;
+    --amber:#E8A33D;
+    --bg:#F5F6F8;
+    --card:#FFFFFF;
+    --text:#1C2430;
+    --muted:#67707D;
+    --line:#E3E6EA;
+    --done-bg:#EFF7F1;
+    --done-line:#8FBF9E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--navy);}
+
+  /* HEADER */
+  header{
+    background:var(--navy-dark);
+    color:#fff;
+    padding:2.2rem 1.5rem 1.6rem;
+  }
+  .header-inner{max-width:980px;margin:0 auto;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(26px,4vw,34px);
+    font-weight:700;
+    margin:0 0 6px;
+    line-height:1.15;
+  }
+  .subtitle{
+    color:#C7CEDB;
+    font-size:15px;
+    margin:0 0 22px;
+    max-width:640px;
+  }
+
+  /* PIPELINE PROGRESS */
+  .pipeline{
+    display:flex;
+    align-items:center;
+    gap:0;
+    overflow-x:auto;
+    padding-bottom:6px;
+  }
+  .pipe-stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-width:76px;
+    flex:1;
+    cursor:pointer;
+    background:none;
+    border:none;
+    color:inherit;
+    font-family:inherit;
+    padding:0;
+  }
+  .pipe-node{
+    width:34px;height:34px;border-radius:50%;
+    background:#2B4370;
+    border:2px solid #3E5A8E;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:500;
+    color:#B9C4D8;
+    transition:all .25s ease;
+    position:relative;
+    z-index:1;
+  }
+  .pipe-stage.complete .pipe-node{
+    background:var(--amber);
+    border-color:var(--amber);
+    color:var(--navy-dark);
+  }
+  .pipe-stage.partial .pipe-node{
+    border-color:var(--amber);
+    color:var(--amber);
+  }
+  .pipe-track{
+    position:relative;
+    height:2px;
+    background:#3E5A8E;
+    flex:1;
+    top:-17px;
+    z-index:0;
+    margin:0 -6px;
+  }
+  .pipe-label{
+    font-size:10.5px;
+    color:#9FACC4;
+    margin-top:6px;
+    text-align:center;
+    line-height:1.25;
+    max-width:80px;
+  }
+  .pipe-stage.complete .pipe-label{color:var(--amber);}
+
+  /* LAYOUT */
+  .wrap{max-width:980px;margin:0 auto;padding:1.6rem 1.5rem 4rem;}
+
+  .controls{
+    display:flex;gap:10px;flex-wrap:wrap;
+    margin-bottom:1.6rem;
+    position:sticky;top:0;
+    background:var(--bg);
+    padding:12px 0;
+    z-index:5;
+  }
+  #search{
+    flex:1;min-width:200px;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    background:var(--card);
+  }
+  #search:focus{outline:2px solid var(--navy);outline-offset:-1px;}
+  .btn{
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--card);
+    color:var(--text);
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .btn:hover{border-color:var(--navy);}
+
+  /* CATEGORY */
+  .category{
+    margin-bottom:1.8rem;
+    scroll-margin-top:90px;
+  }
+  .cat-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:2px solid var(--navy);
+    padding-bottom:8px;
+    margin-bottom:12px;
+  }
+  .cat-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:18px;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .cat-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .cat-count{
+    font-size:12px;
+    color:var(--muted);
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* QA CARD */
+  .qa{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:8px;
+    overflow:hidden;
+    transition:border-color .2s;
+  }
+  .qa.done{background:var(--done-bg);border-color:var(--done-line);}
+  .qa-q{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:13px 14px;
+    cursor:pointer;
+  }
+  .qa-check{
+    flex-shrink:0;
+    width:19px;height:19px;
+    border-radius:5px;
+    border:1.5px solid #C4CBD4;
+    margin-top:2px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;
+    color:#fff;
+    background:#fff;
+  }
+  .qa.done .qa-check{background:var(--done-line);border-color:var(--done-line);}
+  .qa-q-text{
+    flex:1;
+    font-size:14.5px;
+    font-weight:500;
+    line-height:1.4;
+  }
+  .qa-chevron{
+    flex-shrink:0;
+    color:var(--muted);
+    transition:transform .2s;
+    font-size:13px;
+    margin-top:3px;
+  }
+  .qa.open .qa-chevron{transform:rotate(90deg);}
+  .qa-a{
+    display:none;
+    padding:0 14px 16px 43px;
+    font-size:14px;
+    line-height:1.65;
+    color:#3B4452;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .qa.open .qa-a{display:block;}
+  .qa-a strong{color:var(--navy);}
+  .qa-a ul{margin:6px 0;padding-left:18px;}
+  .qa-a li{margin-bottom:3px;}
+
+  .hidden{display:none !important;}
+
+  footer{
+    max-width:980px;margin:0 auto;padding:0 1.5rem 3rem;
+    color:var(--muted);font-size:12.5px;
+    text-align:center;
+  }
+
+  @media (max-width:640px){
+    .pipe-label{display:none;}
+    .pipe-stage{min-width:40px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <p class="eyebrow">Interview prep · Karini AI</p>
+    <h1>DevOps engineer question bank</h1>
+    <p class="subtitle">Built around the Karini AI job description and your resume. Tap a stage below to jump to it, tap a question to reveal the answer, check off what you've reviewed.</p>
+    <nav class="pipeline" id="pipeline"></nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <input id="search" type="text" placeholder="Search questions… e.g. Kubernetes, IAM, rollback" />
+    <button class="btn" id="expandAll">Expand all</button>
+    <button class="btn" id="collapseAll">Collapse all</button>
+    <button class="btn" id="resetProgress">Reset progress</button>
+  </div>
+  <div id="categories"></div>
+</div>
+
+<footer>
+  Progress is saved in this browser only. Reopen this file anytime to pick up where you left off.
+</footer>
+
+<script>
+const DATA = [
+  {
+    id: "cloud",
+    tag: "01",
+    name: "Cloud platforms (AWS / Azure / GCP)",
+    questions: [
+      {
+        q: "Walk me through the AWS services you've actually worked with hands-on.",
+        a: "Answer from your own experience: at Amazon you worked daily with EC2, S3, IAM, VPC, and Lambda troubleshooting customer issues, and in your own projects you built a secure VPC (subnets, IGW, NAT Gateway, route tables, security groups, NACLs), hosted a static site on S3 with CloudFront, and used CloudFormation and CloudWatch. Be specific and honest: name the services, say what you did with each, and don't claim Azure/GCP hands-on experience you don't have."
+      },
+      {
+        q: "What is IAM and how would you set up least-privilege access for a new DevOps tool?",
+        a: "IAM (Identity and Access Management) controls who can do what on AWS. For least privilege: create a dedicated IAM role or user for the tool, attach a policy that grants only the specific actions and resources it needs (not AdministratorAccess), use roles instead of long-lived access keys where possible, and review/rotate credentials periodically. Mention you configured least-privilege IAM roles in your own VPC project."
+      },
+      {
+        q: "What's the difference between a Security Group and a NACL?",
+        a: "A Security Group is stateful and attached to instances/ENIs, it allows traffic based on rules and automatically allows the return traffic. A NACL is stateless, attached at the subnet level, and evaluates both inbound and outbound rules separately, including explicit deny rules. Security Groups are the first line of defense at the instance level, NACLs add a broader layer at the subnet level."
+      },
+      {
+        q: "What are public and private subnets and why do you need both?",
+        a: "A public subnet has a route to an Internet Gateway (IGW) so its resources can be reached from or reach the internet directly. A private subnet has no direct IGW route, so it uses a NAT Gateway (placed in a public subnet) for outbound internet access without being directly reachable from outside. You typically put load balancers/bastion hosts in public subnets and application/database servers in private subnets for security."
+      },
+      {
+        q: "You've listed Azure and GCP as 'learning fundamentals.' What's your plan to get comfortable with them?",
+        a: "Be honest that your deep hands-on experience is AWS, but the core cloud concepts (compute, storage, IAM, networking, VPC equivalents) transfer directly. Mention concrete next steps: Azure fundamentals (AZ-900 track) and GCP equivalents (EC2 vs Azure VM/GCE, S3 vs Blob Storage/Cloud Storage, IAM vs Azure AD/Cloud IAM), and that you're mapping AWS concepts you already know onto their Azure/GCP equivalents."
+      },
+      {
+        q: "What is a NAT Gateway and why did you use one in your VPC project?",
+        a: "A NAT Gateway lets resources in a private subnet initiate outbound traffic to the internet (e.g., for software updates) without allowing unsolicited inbound connections from the internet. In your VPC project you placed it in the public subnet and routed private subnet traffic through it, keeping backend resources unreachable directly from outside."
+      }
+    ]
+  },
+  {
+    id: "containers",
+    tag: "02",
+    name: "Docker and Kubernetes",
+    questions: [
+      {
+        q: "Explain what Docker is and why you used it in your CI/CD project.",
+        a: "Docker packages an application and its dependencies into a container image so it runs the same way anywhere. In your Jenkins/Maven project, you containerized the build artifact so the deployment environment was consistent and repeatable, instead of relying on whatever was manually installed on the target server."
+      },
+      {
+        q: "What is a multi-stage Docker build and why would you use one?",
+        a: "A multi-stage build uses multiple FROM statements in one Dockerfile: an early stage compiles or builds the application with all the build tools, and a later, smaller stage copies only the final artifact into a lean runtime image. This keeps the final image small and avoids shipping compilers, build caches, and dev dependencies to production. You used this in your containerized Python project."
+      },
+      {
+        q: "What is Kubernetes and how is it different from just running Docker containers?",
+        a: "Kubernetes is a container orchestration platform: it schedules containers across a cluster of machines, restarts failed containers, scales them up or down, handles networking between them (Services), and manages rolling updates. Plain Docker runs containers on a single host with no automatic scaling, self-healing, or multi-node scheduling. Be upfront that this is an area you're actively building hands-on practice in."
+      },
+      {
+        q: "What are Pods, Deployments, and Services in Kubernetes, at a basic level?",
+        a: "A Pod is the smallest deployable unit, usually one container (or a couple of tightly coupled ones) sharing storage and network. A Deployment manages a set of identical Pods, handling replica count, rolling updates, and rollbacks. A Service gives a stable network endpoint (a fixed IP/DNS name) to reach a group of Pods, even as individual Pods are replaced."
+      },
+      {
+        q: "How would Kubernetes help with zero-downtime deployment?",
+        a: "Kubernetes Deployments support rolling updates by default: it spins up new Pods with the updated version, waits for them to pass readiness checks, then gradually terminates old Pods, so there's always a working set of Pods serving traffic. If something goes wrong, you can roll back to the previous ReplicaSet quickly."
+      },
+      {
+        q: "What are EKS, AKS, and GKE?",
+        a: "They're each cloud provider's managed Kubernetes service: EKS is AWS's, AKS is Azure's, GKE is Google Cloud's. All three manage the Kubernetes control plane for you (upgrades, high availability, etcd) so you focus on deploying workloads rather than operating the cluster's core infrastructure. Mention that your AWS background makes EKS the most natural entry point for you."
+      }
+    ]
+  },
+  {
+    id: "iac",
+    tag: "03",
+    name: "Infrastructure as Code (Terraform and CloudFormation)",
+    questions: [
+      {
+        q: "What is Infrastructure as Code and why does it matter?",
+        a: "IaC means defining infrastructure (servers, networks, IAM roles, etc.) in versioned configuration files instead of clicking through a console. It gives you repeatability, code review for infra changes, easy environment replication (dev/staging/prod), and a clear audit trail through version control."
+      },
+      {
+        q: "What's the difference between CloudFormation and Terraform?",
+        a: "CloudFormation is AWS-native, YAML/JSON based, and only manages AWS resources. Terraform, from HashiCorp, uses HCL, is cloud-agnostic (works across AWS, Azure, GCP, and more via providers), and has a large community module ecosystem. You've worked with CloudFormation for your VPC project and are currently building Terraform skills since it's the more commonly requested tool across multi-cloud teams."
+      },
+      {
+        q: "What is Terraform state and why is it important?",
+        a: "Terraform state is a file that maps your configuration to real-world resources, so Terraform knows what it manages and can calculate what needs to change on the next apply. In a team setting, this state is usually stored remotely (e.g., in S3 with a DynamoDB lock table) so multiple people don't overwrite each other's changes."
+      },
+      {
+        q: "What's the difference between terraform plan and terraform apply?",
+        a: "terraform plan shows you a preview of what changes Terraform would make (create, update, destroy) without actually making them. terraform apply executes those changes. Always reviewing the plan output before applying is a key safety practice, especially in production."
+      },
+      {
+        q: "How would you manage different environments (dev, staging, prod) with IaC?",
+        a: "Common approaches: separate state files/workspaces per environment, or separate variable files (e.g., dev.tfvars, prod.tfvars) with the same base templates, or separate directories per environment referencing shared modules. The goal is to reuse the same tested configuration logic while keeping environment-specific values and state isolated."
+      }
+    ]
+  },
+  {
+    id: "cicd",
+    tag: "04",
+    name: "CI/CD pipelines",
+    questions: [
+      {
+        q: "Walk me through the CI/CD pipeline you built.",
+        a: "Describe your actual project: a Jenkins pipeline that automates build, test, and packaging of a Java 21/Maven application on Ubuntu, then containerizes the build artifact with Docker for consistent deployment, using Git for source control. Mention what triggered the build, what stages it had (build, test, package), and what you'd add next (e.g., automated deployment stage, notifications)."
+      },
+      {
+        q: "What is the difference between Continuous Integration, Continuous Delivery, and Continuous Deployment?",
+        a: "Continuous Integration means merging code changes frequently with automated builds and tests catching issues early. Continuous Delivery means the code is always in a deployable state after passing tests, but deployment to production is a manual trigger. Continuous Deployment goes one step further and automatically deploys every change that passes the pipeline, with no manual approval step."
+      },
+      {
+        q: "How would you design a CI/CD pipeline for zero-downtime deployment?",
+        a: "Key ideas: build and test the artifact in CI, use a deployment strategy like blue-green or rolling updates (or canary) so new instances/Pods come up and pass health checks before old ones are removed, keep a fast rollback path (previous image/version ready to redeploy), and gate the release behind automated tests and health checks rather than a fixed timer."
+      },
+      {
+        q: "You haven't used GitHub Actions, Azure DevOps, or Spinnaker yet. How would you approach learning a new CI/CD tool quickly?",
+        a: "Be honest and practical: your Jenkins experience gives you the underlying pipeline concepts (stages, triggers, artifacts, environment variables) that transfer across tools. For a new tool you'd start with its official quickstart, replicate a small pipeline similar to what you already built in Jenkins, and compare its syntax/concepts (e.g., GitHub Actions workflows and jobs vs Jenkins stages) side by side with what you already know."
+      },
+      {
+        q: "What would you do if a deployment pipeline failed at the test stage?",
+        a: "Stop the pipeline before it reaches deployment (fail fast), check the build/test logs to identify the failing test and root cause, fix the issue or revert the offending commit, and only let the pipeline proceed once tests pass. The goal is that broken code never reaches production."
+      },
+      {
+        q: "How do you handle secrets (API keys, credentials) in a CI/CD pipeline?",
+        a: "Never hardcode secrets in the pipeline script or commit them to Git. Use the CI/CD tool's built-in credentials store (e.g., Jenkins Credentials Plugin) or a dedicated secrets manager (AWS Secrets Manager, HashiCorp Vault), inject them as environment variables at runtime, and restrict which pipelines/jobs can access which secrets."
+      }
+    ]
+  },
+  {
+    id: "git",
+    tag: "05",
+    name: "Git and GitLab",
+    questions: [
+      {
+        q: "What is the difference between git merge and git rebase?",
+        a: "git merge combines two branches and creates a new merge commit, preserving the full history of both branches. git rebase replays your branch's commits on top of another branch, creating a linear history without a merge commit, but it rewrites commit history, so it should be avoided on shared/public branches."
+      },
+      {
+        q: "What's your Git workflow for making a change safely?",
+        a: "Pull the latest changes from the main branch, create a feature branch, make and commit changes in small logical commits, push the branch, open a pull/merge request for review, and merge only after review and passing CI checks. This keeps main always deployable."
+      },
+      {
+        q: "How would you undo a commit that's already been pushed?",
+        a: "If it hasn't been built on by others, git revert creates a new commit that undoes the changes, which is safe for shared branches since it doesn't rewrite history. git reset rewrites history and should only be used on local/unshared branches, since force-pushing a reset can break things for teammates."
+      },
+      {
+        q: "What is GitLab CI/CD and how does it relate to Git?",
+        a: "GitLab is a Git repository host (like GitHub) with a built-in CI/CD system: you define pipeline stages in a .gitlab-ci.yml file at the repo root, and GitLab runs them automatically on events like a push or merge request. Conceptually it's similar to Jenkins pipelines or GitHub Actions workflows, just configured natively alongside the repo."
+      },
+      {
+        q: "What's a merge conflict and how do you resolve one?",
+        a: "A merge conflict happens when Git can't automatically reconcile changes to the same lines/file made in two branches. To resolve it, open the conflicted file, look for the conflict markers (<<<<<<<, =======, >>>>>>>), decide which changes to keep (or combine them), remove the markers, then add and commit the resolved file."
+      }
+    ]
+  },
+  {
+    id: "scripting",
+    tag: "06",
+    name: "Scripting (Python, Shell, PowerShell)",
+    questions: [
+      {
+        q: "How would you write a simple Bash script to check if a service is running and restart it if not?",
+        a: "Outline the logic even if you can't write full syntax from memory: check the process/service status (e.g., using systemctl status or checking for the process), use an if condition to test the result, and if it's not running, call the restart command (e.g., systemctl restart servicename) and log the action with a timestamp."
+      },
+      {
+        q: "What would you use Python for in a DevOps context?",
+        a: "Common uses: automation scripts that call cloud APIs via boto3 (e.g., listing EC2 instances, tagging resources, cleaning up unused snapshots), parsing and processing log files, writing small tools that glue together CI/CD steps, and interacting with REST APIs for monitoring or ticketing systems. Be honest that this is an area you're actively building practice in, and mention any script you're working on or planning."
+      },
+      {
+        q: "What is PowerShell used for, and when would you reach for it over Bash?",
+        a: "PowerShell is Microsoft's scripting shell and automation framework, commonly used for managing Windows Server, Active Directory, and Azure resources (via the Az module). You'd reach for it in Windows/Azure-heavy environments, while Bash is the natural choice on Linux/Unix systems. It's fine to say this is new to you and that your practical scripting has focused on Bash and Linux so far."
+      },
+      {
+        q: "How do you approach writing a script when you're not fully confident with the syntax yet?",
+        a: "A good honest answer: break the task into steps in plain English first, write the logic as pseudocode, look up exact syntax for each piece as needed, test incrementally rather than writing the whole script blind, and read existing scripts/examples to learn patterns. This shows a practical, safe approach rather than claiming expertise you don't have yet."
+      },
+      {
+        q: "What's a cron job, and how would you schedule a script to run daily?",
+        a: "Cron is a Linux job scheduler. You add a line to a crontab defining the schedule (minute, hour, day, month, weekday) and the command to run, for example running a backup script every day at 2 AM. On Windows, the equivalent is Task Scheduler."
+      }
+    ]
+  },
+  {
+    id: "monitoring",
+    tag: "07",
+    name: "Monitoring and logging",
+    questions: [
+      {
+        q: "What monitoring tools have you used, and what would you like to learn next?",
+        a: "You've used AWS CloudWatch for monitoring in your VPC project and during support work at Amazon. You're currently building hands-on practice with Prometheus (metrics collection) and Grafana (dashboards/visualization), which are widely used for infrastructure and application monitoring outside of AWS-native tooling."
+      },
+      {
+        q: "What's the difference between monitoring and logging?",
+        a: "Monitoring tracks metrics over time (CPU usage, request latency, error rates) to show the health and performance of a system, usually visualized on dashboards with alerting thresholds. Logging captures detailed, timestamped event records (what happened, when, with what details) used mainly for debugging and root-cause analysis after something goes wrong."
+      },
+      {
+        q: "How would you set up an alert for high CPU usage on a server?",
+        a: "In CloudWatch, you'd create an alarm on the CPUUtilization metric for the EC2 instance, set a threshold (e.g., above 80% for 5 minutes), and configure an action like sending a notification via SNS or triggering an Auto Scaling action. The same pattern applies in Prometheus using alerting rules with Alertmanager."
+      },
+      {
+        q: "Why is centralized logging important in a distributed system?",
+        a: "When an application runs across multiple servers or containers, individual server logs are scattered and hard to correlate. Centralized logging aggregates logs from all sources into one searchable place, making it possible to trace a single request or incident across services, and to set up alerts on log patterns."
+      },
+      {
+        q: "You mentioned you're 'just starting' with Prometheus and Grafana. How would you explain that honestly in an interview?",
+        a: "Say clearly what you know conceptually (Prometheus scrapes and stores time-series metrics, Grafana visualizes them in dashboards), what hands-on practice you've done or plan to do (setting up a local Prometheus instance, building a basic dashboard), and that you have real monitoring exposure from CloudWatch, so the concepts aren't new even if the specific tool is."
+      }
+    ]
+  },
+  {
+    id: "networking",
+    tag: "08",
+    name: "Networking and cloud services",
+    questions: [
+      {
+        q: "Explain DNS in simple terms.",
+        a: "DNS (Domain Name System) translates human-readable domain names (like example.com) into IP addresses that computers use to route traffic. It works as a hierarchy of servers, from root servers down to the authoritative server that holds the actual DNS records (A, CNAME, MX, etc.) for a domain."
+      },
+      {
+        q: "What is DHCP and why is it used?",
+        a: "DHCP (Dynamic Host Configuration Protocol) automatically assigns IP addresses and network configuration (subnet mask, gateway, DNS servers) to devices on a network, so administrators don't have to manually configure each device. You troubleshot DHCP assignment problems directly during your time at Amazon."
+      },
+      {
+        q: "What's the difference between subnetting and VLANs?",
+        a: "Subnetting divides an IP address range into smaller logical networks at Layer 3 (IP layer), controlling routing and address allocation. VLANs (Virtual LANs) segment a physical network at Layer 2 (data link layer) into separate broadcast domains, isolating traffic between groups of devices even if they're on the same physical switch."
+      },
+      {
+        q: "What happens when you type a URL into a browser, at a high level?",
+        a: "The browser resolves the domain name to an IP address via DNS, opens a TCP connection to that IP (usually with a TLS handshake for HTTPS), sends an HTTP request, the server processes it and sends back a response, and the browser renders the returned content."
+      },
+      {
+        q: "What's the difference between a Load Balancer and an API Gateway?",
+        a: "A Load Balancer distributes incoming traffic across multiple backend servers/instances to improve availability and handle load, operating mainly at the network or application layer. An API Gateway sits in front of APIs and adds functionality like authentication, rate limiting, request routing to different services, and request/response transformation, often used in microservice architectures."
+      },
+      {
+        q: "What is a firewall and how does it differ from a Security Group?",
+        a: "A firewall is a general term for a system that filters network traffic based on rules. A Security Group is AWS's specific implementation of a stateful, instance-level firewall. Traditional firewalls can also be perimeter devices protecting an entire network, while Security Groups are applied per resource within a VPC."
+      }
+    ]
+  },
+  {
+    id: "bestpractices",
+    tag: "09",
+    name: "DevOps practices, disaster recovery and zero-downtime deployment",
+    questions: [
+      {
+        q: "What does 'DevOps' mean to you?",
+        a: "DevOps is a set of practices and culture that brings development and operations together to ship software faster and more reliably, using automation (CI/CD, IaC), monitoring, and collaboration to shorten the feedback loop between writing code and running it safely in production."
+      },
+      {
+        q: "What is the difference between Disaster Recovery (DR) and High Availability (HA)?",
+        a: "High Availability aims to keep a system running continuously with minimal downtime, usually through redundancy within a region or across zones. Disaster Recovery is the broader plan for recovering systems and data after a major failure (region outage, data loss, ransomware), often involving backups, failover to a secondary region, and defined recovery objectives."
+      },
+      {
+        q: "What are RTO and RPO?",
+        a: "RTO (Recovery Time Objective) is the maximum acceptable time to restore service after a disruption. RPO (Recovery Point Objective) is the maximum acceptable amount of data loss, measured in time, e.g., an RPO of 1 hour means you can tolerate losing up to an hour of data since the last backup or replication point."
+      },
+      {
+        q: "How would you achieve zero-downtime deployment for a web application?",
+        a: "Common strategies: rolling deployment (replace instances/Pods gradually while others keep serving traffic), blue-green deployment (deploy the new version alongside the old, then switch traffic once verified, keeping instant rollback), or canary deployment (route a small percentage of traffic to the new version first, then increase gradually if healthy). All rely on health checks and automated rollback."
+      },
+      {
+        q: "What's a rollback strategy, and why does it matter?",
+        a: "A rollback strategy is the plan to quickly revert to a previous known-good version if a deployment causes issues. It matters because it limits the blast radius and downtime of a bad release. In practice, this usually means keeping the previous container image/artifact ready to redeploy immediately, or using deployment tools that support one-command rollback."
+      },
+      {
+        q: "How would you approach an incident where production is down right now?",
+        a: "Acknowledge and triage first (confirm scope and impact), check recent changes/deployments as a likely cause, communicate status to stakeholders, mitigate quickly (rollback or failover) rather than root-causing under pressure, restore service, then do a proper root-cause analysis and write it up afterward. This mirrors the incident-ownership discipline you already practiced at Amazon."
+      },
+      {
+        q: "Why is documentation important in a DevOps role?",
+        a: "Runbooks and documentation let any team member resolve a known issue consistently without reinventing the process each time, reduce mean-time-to-resolution during incidents, and preserve institutional knowledge as teams change. You have direct experience authoring Confluence runbooks and knowledge base articles that the wider support team relied on."
+      }
+    ]
+  },
+  {
+    id: "background",
+    tag: "10",
+    name: "Your background and transition story",
+    questions: [
+      {
+        q: "You've spent 5+ years in AWS customer service. Why do you want to move into DevOps now?",
+        a: "Frame it as a natural progression, not a pivot away from something: you spent years diagnosing and fixing real AWS infrastructure and networking issues for customers, which gave you deep practical exposure to EC2, VPC, IAM, and networking. You've since built your own CI/CD, containerization, and infrastructure projects to turn that troubleshooting knowledge into the ability to build and automate systems, not just support them."
+      },
+      {
+        q: "What's the biggest difference between what you did in customer service and what a DevOps engineer does?",
+        a: "In customer service you diagnosed and fixed issues in systems built and configured by others, reactively. A DevOps engineer proactively designs, builds, and automates the infrastructure and pipelines so those issues happen less often. Your troubleshooting instinct transfers directly, and your projects show you can already build, not just fix."
+      },
+      {
+        q: "What's a project you're most proud of, and why?",
+        a: "Pick the one you know best to discuss in depth, likely the Jenkins/Docker CI/CD pipeline or the Secure VPC project. Be ready to explain what you built, what problem it solved, what you'd improve with more time, and any issues you ran into and how you debugged them, this last part matters most to interviewers."
+      },
+      {
+        q: "How do you stay accountable while learning tools like Kubernetes and Terraform on your own, without a formal team or mentor?",
+        a: "Describe your actual habits: daily hands-on practice, building small real projects rather than only watching tutorials, documenting what you learn, and treating your own projects like production work (with proper configuration, not just 'hello world' examples). Mention your SOP/runbook authoring habit from Amazon as evidence you naturally document your learning too."
+      },
+      {
+        q: "Where do you see yourself needing the most support in your first few months in this role?",
+        a: "Be honest and specific rather than vague: name the areas you're still building depth in, like Kubernetes at scale, Terraform module design, or tools you haven't touched yet (GitHub Actions, Spinnaker), and pair that with what you bring immediately (AWS fluency, networking depth, Jenkins/Docker CI/CD, strong troubleshooting and documentation habits)."
+      },
+      {
+        q: "Why should we hire a fresher for a role with this many required skills?",
+        a: "A fair answer: you're not starting from zero, you bring 5+ years of real, daily hands-on AWS and networking experience most freshers don't have, plus self-built projects proving you can already execute the CI/CD and IaC fundamentals. The remaining tools (Kubernetes depth, Terraform, GitHub Actions, monitoring stack) are things you're already actively building and can ramp on faster because the underlying cloud and networking concepts are already second nature to you."
+      }
+    ]
+  }
+];
+
+const state = { checked: new Set(), openIds: new Set() };
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem('karini_devops_qa_progress');
+    if(raw){ state.checked = new Set(JSON.parse(raw)); }
+  }catch(e){}
+}
+function saveProgress(){
+  try{ localStorage.setItem('karini_devops_qa_progress', JSON.stringify([...state.checked])); }catch(e){}
+}
+
+function qaKey(catId, idx){ return catId + ':' + idx; }
+
+function render(){
+  const pipeline = document.getElementById('pipeline');
+  const catsWrap = document.getElementById('categories');
+  pipeline.innerHTML = '';
+  catsWrap.innerHTML = '';
+
+  DATA.forEach((cat, ci) => {
+    const total = cat.questions.length;
+    const doneCount = cat.questions.filter((_, qi) => state.checked.has(qaKey(cat.id, qi))).length;
+    const complete = doneCount === total;
+    const partial = doneCount > 0 && !complete;
+
+    // pipeline stage
+    const stageBtn = document.createElement('button');
+    stageBtn.className = 'pipe-stage' + (complete ? ' complete' : '') + (partial ? ' partial' : '');
+    stageBtn.innerHTML = `<span class="pipe-node">${complete ? '&#10003;' : cat.tag}</span><span class="pipe-label">${cat.name.split('(')[0].trim()}</span>`;
+    stageBtn.onclick = () => document.getElementById('cat-' + cat.id).scrollIntoView({behavior:'smooth', block:'start'});
+    pipeline.appendChild(stageBtn);
+    if(ci < DATA.length - 1){
+      const track = document.createElement('div');
+      track.className = 'pipe-track';
+      pipeline.appendChild(track);
+    }
+
+    // category block
+    const section = document.createElement('div');
+    section.className = 'category';
+    section.id = 'cat-' + cat.id;
+
+    const head = document.createElement('div');
+    head.className = 'cat-head';
+    head.innerHTML = `<span class="cat-title"><span class="cat-tag">${cat.tag}</span> &nbsp;${cat.name}</span><span class="cat-count">${doneCount}/${total} reviewed</span>`;
+    section.appendChild(head);
+
+    cat.questions.forEach((item, qi) => {
+      const key = qaKey(cat.id, qi);
+      const qaDiv = document.createElement('div');
+      qaDiv.className = 'qa' + (state.checked.has(key) ? ' done' : '') + (state.openIds.has(key) ? ' open' : '');
+      qaDiv.dataset.search = (item.q + ' ' + item.a).toLowerCase();
+
+      const qRow = document.createElement('div');
+      qRow.className = 'qa-q';
+      qRow.innerHTML = `
+        <span class="qa-check">${state.checked.has(key) ? '&#10003;' : ''}</span>
+        <span class="qa-q-text">${item.q}</span>
+        <span class="qa-chevron">&#9656;</span>
+      `;
+      const checkEl = qRow.querySelector('.qa-check');
+      checkEl.onclick = (e) => {
+        e.stopPropagation();
+        if(state.checked.has(key)){ state.checked.delete(key); } else { state.checked.add(key); }
+        saveProgress();
+        render();
+      };
+      qRow.onclick = () => {
+        if(state.openIds.has(key)){ state.openIds.delete(key); } else { state.openIds.add(key); }
+        render();
+      };
+
+      const aDiv = document.createElement('div');
+      aDiv.className = 'qa-a';
+      aDiv.innerHTML = item.a;
+
+      qaDiv.appendChild(qRow);
+      qaDiv.appendChild(aDiv);
+      section.appendChild(qaDiv);
+    });
+
+    catsWrap.appendChild(section);
+  });
+
+  applySearch();
+}
+
+function applySearch(){
+  const term = document.getElementById('search').value.trim().toLowerCase();
+  document.querySelectorAll('.qa').forEach(el => {
+    if(!term){ el.classList.remove('hidden'); return; }
+    el.classList.toggle('hidden', !el.dataset.search.includes(term));
+  });
+  document.querySelectorAll('.category').forEach(cat => {
+    const anyVisible = [...cat.querySelectorAll('.qa')].some(q => !q.classList.contains('hidden'));
+    cat.classList.toggle('hidden', term && !anyVisible);
+  });
+}
+
+document.getElementById('search').addEventListener('input', applySearch);
+document.getElementById('expandAll').onclick = () => {
+  DATA.forEach(cat => cat.questions.forEach((_, qi) => state.openIds.add(qaKey(cat.id, qi))));
+  render();
+};
+document.getElementById('collapseAll').onclick = () => {
+  state.openIds.clear();
+  render();
+};
+document.getElementById('resetProgress').onclick = () => {
+  if(confirm('Clear all reviewed checkmarks?')){
+    state.checked.clear();
+    saveProgress();
+    render();
+  }
+};
+
+loadProgress();
+render();
+</script>
+</body>
+</html>
